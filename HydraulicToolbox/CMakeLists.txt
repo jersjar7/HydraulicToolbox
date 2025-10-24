@@ -56,6 +56,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ui/WorkflowController.cpp
         ui/WorkflowTabBar.h
         ui/WorkflowTabBar.cpp
+        ui/GeometryDefinitionWidget.h
+        ui/GeometryDefinitionWidget.cpp
     )
 else()
     if(ANDROID)

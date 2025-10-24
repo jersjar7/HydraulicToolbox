@@ -8,7 +8,9 @@
 #include <QMenuBar>
 #include <QMenu>
 #include <QAction>
+#include <QStackedWidget>
 #include "ProjectSetupWidget.h"
+#include "GeometryDefinitionWidget.h"
 #include "WorkflowController.h"
 #include "WorkflowTabBar.h"
 
@@ -29,6 +31,8 @@ public:
 private slots:
     void on_tab_clicked(WorkflowStage stage);
     void on_project_setup_data_changed();
+    void on_geometry_data_changed();
+    void on_current_stage_changed(WorkflowStage newStage);
 
 private:
     void setup_ui();
@@ -56,9 +60,11 @@ private:
     // Workflow components
     WorkflowController* workflowController_;
     WorkflowTabBar* workflowTabBar_;
+    QStackedWidget* stageStackedWidget_;
 
     // Workflow widgets
     ProjectSetupWidget* projectSetupWidget_;
+    GeometryDefinitionWidget* geometryDefinitionWidget_;
 };
 
 #endif // MAINWINDOW_H

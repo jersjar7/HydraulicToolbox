@@ -19,7 +19,9 @@ MainWindow::MainWindow(QWidget *parent)
     , exitAction_{nullptr}
     , workflowController_{nullptr}
     , workflowTabBar_{nullptr}
+    , stageStackedWidget_{nullptr}
     , projectSetupWidget_{nullptr}
+    , geometryDefinitionWidget_{nullptr}
 {
     ui->setupUi(this);
 
@@ -29,6 +31,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(projectSetupWidget_, &ProjectSetupWidget::data_changed,
             this, &MainWindow::on_project_setup_data_changed);
+    connect(geometryDefinitionWidget_, &GeometryDefinitionWidget::data_changed,
+            this, &MainWindow::on_geometry_data_changed);
+    connect(workflowController_, &WorkflowController::current_stage_changed,
+            this, &MainWindow::on_current_stage_changed);
 }
 
 MainWindow::~MainWindow()
@@ -102,8 +108,15 @@ void MainWindow::setup_layout()
     parameterLayout->setContentsMargins(0, 0, 0, 0);
     parameterLayout->setSpacing(0);
 
-    projectSetupWidget_ = new ProjectSetupWidget(parameterPanel_);
-    parameterLayout->addWidget(projectSetupWidget_);
+    stageStackedWidget_ = new QStackedWidget(parameterPanel_);
+
+    projectSetupWidget_ = new ProjectSetupWidget();
+    geometryDefinitionWidget_ = new GeometryDefinitionWidget();
+
+    stageStackedWidget_->addWidget(projectSetupWidget_);
+    stageStackedWidget_->addWidget(geometryDefinitionWidget_);
+
+    parameterLayout->addWidget(stageStackedWidget_);
 
     workflowTabBar_ = new WorkflowTabBar(workflowController_, parameterPanel_);
     parameterLayout->addWidget(workflowTabBar_);
@@ -137,6 +150,16 @@ void MainWindow::on_tab_clicked(WorkflowStage stage)
     workflowController_->set_current_stage(stage);
 }
 
+void MainWindow::on_current_stage_changed(WorkflowStage newStage)
+{
+    int index = static_cast<int>(newStage);
+
+    if(index < stageStackedWidget_->count())
+    {
+        stageStackedWidget_->setCurrentIndex(index);
+    }
+}
+
 void MainWindow::on_project_setup_data_changed()
 {
     ProjectData& data = workflowController_->get_project_data();
@@ -149,6 +172,21 @@ void MainWindow::on_project_setup_data_changed()
     workflowController_->mark_stage_complete(WorkflowStage::ProjectSetup, isComplete);
 
     update_unit_system_indicator();
+}
+
+void MainWindow::on_geometry_data_changed()
+{
+    GeometryData& data = workflowController_->get_geometry_data();
+
+    data.channelType = geometryDefinitionWidget_->get_channel_type();
+    data.bottomWidth = geometryDefinitionWidget_->get_bottom_width();
+    data.depth = geometryDefinitionWidget_->get_depth();
+    data.sideSlope = geometryDefinitionWidget_->get_side_slope();
+    data.length = geometryDefinitionWidget_->get_length();
+    data.bedSlope = geometryDefinitionWidget_->get_bed_slope();
+
+    bool isComplete = geometryDefinitionWidget_->is_complete();
+    workflowController_->mark_stage_complete(WorkflowStage::GeometryDefinition, isComplete);
 }
 
 void MainWindow::update_unit_system_indicator()
