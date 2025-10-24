@@ -22,17 +22,40 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
+# Backend calculation engine sources
+set(BACKEND_SOURCES
+    backend/Channel.cpp
+    backend/RectangularChannel.cpp
+    backend/TrapezoidalChannel.cpp
+    backend/TriangularChannel.cpp
+    backend/Flow.cpp
+    backend/Analyzer.cpp
+)
+
+# UI sources
+set(UI_SOURCES
+    ui/mainwindow.cpp
+    ui/mainwindow.h
+    ui/mainwindow.ui
+)
+
+# Main application sources
 set(PROJECT_SOURCES
-        main.cpp
-        mainwindow.cpp
-        mainwindow.h
-        mainwindow.ui
+    main.cpp
+    ${BACKEND_SOURCES}
+    ${UI_SOURCES}
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(HydraulicToolbox
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
+        ui/ProjectSetupWidget.h
+        ui/ProjectSetupWidget.cpp
+        ui/WorkflowController.h
+        ui/WorkflowController.cpp
+        ui/WorkflowTabBar.h
+        ui/WorkflowTabBar.cpp
     )
 else()
     if(ANDROID)
@@ -45,6 +68,11 @@ else()
         )
     endif()
 endif()
+
+target_include_directories(HydraulicToolbox PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/backend
+    ${CMAKE_CURRENT_SOURCE_DIR}/ui
+)
 
 target_link_libraries(HydraulicToolbox PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
@@ -59,18 +87,19 @@ set_target_properties(HydraulicToolbox PROPERTIES
     WIN32_EXECUTABLE TRUE
 )
 
+# Test executable
 add_executable(HydraulicTests
-    RectangularChannel_UnitTests.cpp
-    RectangularChannel.cpp
-    TriangularChannel_UnitTests.cpp
-    TriangularChannel.cpp
-    TrapezoidalChannel_UnitTests.cpp
-    TrapezoidalChannel.cpp
-    Channel.cpp
-    Flow_UnitTests.cpp
-    Flow.cpp
-    Analyzer_UnitTests.cpp
-    Analyzer.cpp
+    tests/RectangularChannel_UnitTests.cpp
+    tests/TriangularChannel_UnitTests.cpp
+    tests/TrapezoidalChannel_UnitTests.cpp
+    tests/Flow_UnitTests.cpp
+    tests/Analyzer_UnitTests.cpp
+    ${BACKEND_SOURCES}
+
+)
+
+target_include_directories(HydraulicTests PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/backend
 )
 
 target_link_libraries(HydraulicTests

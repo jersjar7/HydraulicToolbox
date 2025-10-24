@@ -1,0 +1,162 @@
+#include "mainwindow.h"
+#include "./ui_mainwindow.h"
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QSizePolicy>
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+    , mainSplitter_{nullptr}
+    , visualizationArea_{nullptr}
+    , parameterPanel_{nullptr}
+    , unitSystemIndicator_{nullptr}
+    , fileMenu_{nullptr}
+    , newProjectAction_{nullptr}
+    , openProjectAction_{nullptr}
+    , saveAction_{nullptr}
+    , saveAsAction_{nullptr}
+    , exitAction_{nullptr}
+    , workflowController_{nullptr}
+    , workflowTabBar_{nullptr}
+    , projectSetupWidget_{nullptr}
+{
+    ui->setupUi(this);
+
+    workflowController_ = new WorkflowController(this);
+
+    setup_ui();
+
+    connect(projectSetupWidget_, &ProjectSetupWidget::data_changed,
+            this, &MainWindow::on_project_setup_data_changed);
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+void MainWindow::setup_ui()
+{
+    setup_menu_bar();
+    setup_layout();
+    apply_dark_theme();
+
+    setWindowTitle("Hydraulic Toolbox");
+    resize(1200, 800);
+}
+
+void MainWindow::setup_menu_bar()
+{
+    fileMenu_ = menuBar()->addMenu("File");
+
+    newProjectAction_ = new QAction("New Project", this);
+    openProjectAction_ = new QAction("Open Project", this);
+    saveAction_ = new QAction("Save", this);
+    saveAsAction_ = new QAction("Save As...", this);
+    exitAction_ = new QAction("Exit", this);
+
+    fileMenu_->addAction(newProjectAction_);
+    fileMenu_->addAction(openProjectAction_);
+    fileMenu_->addSeparator();
+    fileMenu_->addAction(saveAction_);
+    fileMenu_->addAction(saveAsAction_);
+    fileMenu_->addSeparator();
+    fileMenu_->addAction(exitAction_);
+
+    connect(exitAction_, &QAction::triggered, this, &QMainWindow::close);
+
+    unitSystemIndicator_ = new QLabel("US Customary", this);
+    unitSystemIndicator_->setStyleSheet(
+        "QLabel { "
+        "  background-color: #4a4a4a; "
+        "  color: #ffffff; "
+        "  padding: 4px 12px; "
+        "  border-radius: 3px; "
+        "  font-size: 11px; "
+        "}"
+        );
+    menuBar()->setCornerWidget(unitSystemIndicator_, Qt::TopRightCorner);
+}
+
+void MainWindow::setup_layout()
+{
+    QWidget* centralWidget = new QWidget(this);
+    setCentralWidget(centralWidget);
+
+    QVBoxLayout* mainLayout = new QVBoxLayout(centralWidget);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->setSpacing(0);
+
+    mainSplitter_ = new QSplitter(Qt::Vertical, centralWidget);
+
+    visualizationArea_ = new QWidget();
+    visualizationArea_->setStyleSheet("QWidget { background-color: #d3d3d3; }");
+    visualizationArea_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    parameterPanel_ = new QWidget();
+    parameterPanel_->setStyleSheet("QWidget { background-color: #3c3c3c; }");
+    parameterPanel_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+    QVBoxLayout* parameterLayout = new QVBoxLayout(parameterPanel_);
+    parameterLayout->setContentsMargins(0, 0, 0, 0);
+    parameterLayout->setSpacing(0);
+
+    projectSetupWidget_ = new ProjectSetupWidget(parameterPanel_);
+    parameterLayout->addWidget(projectSetupWidget_);
+
+    workflowTabBar_ = new WorkflowTabBar(workflowController_, parameterPanel_);
+    parameterLayout->addWidget(workflowTabBar_);
+
+    connect(workflowTabBar_, &WorkflowTabBar::tab_clicked,
+            this, &MainWindow::on_tab_clicked);
+
+    mainSplitter_->addWidget(visualizationArea_);
+    mainSplitter_->addWidget(parameterPanel_);
+
+    mainSplitter_->setStretchFactor(0, 2);
+    mainSplitter_->setStretchFactor(1, 1);
+
+    mainLayout->addWidget(mainSplitter_);
+}
+
+void MainWindow::apply_dark_theme()
+{
+    setStyleSheet(
+        "QMainWindow { background-color: #2b2b2b; }"
+        "QMenuBar { background-color: #3c3c3c; color: #ffffff; }"
+        "QMenuBar::item { background-color: #3c3c3c; color: #ffffff; padding: 4px 12px; }"
+        "QMenuBar::item:selected { background-color: #4a4a4a; }"
+        "QMenu { background-color: #3c3c3c; color: #ffffff; }"
+        "QMenu::item:selected { background-color: #4a4a4a; }"
+        );
+}
+
+void MainWindow::on_tab_clicked(WorkflowStage stage)
+{
+    workflowController_->set_current_stage(stage);
+}
+
+void MainWindow::on_project_setup_data_changed()
+{
+    ProjectData& data = workflowController_->get_project_data();
+
+    data.projectName = projectSetupWidget_->get_project_name();
+    data.location = projectSetupWidget_->get_location();
+    data.useUsCustomary = projectSetupWidget_->is_us_customary();
+
+    bool isComplete = projectSetupWidget_->is_complete();
+    workflowController_->mark_stage_complete(WorkflowStage::ProjectSetup, isComplete);
+
+    update_unit_system_indicator();
+}
+
+void MainWindow::update_unit_system_indicator()
+{
+    ProjectData& data = workflowController_->get_project_data();
+
+    if(data.useUsCustomary)
+        unitSystemIndicator_->setText("US Customary");
+    else
+        unitSystemIndicator_->setText("SI Metric");
+}
