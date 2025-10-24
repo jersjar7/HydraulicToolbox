@@ -27,3 +27,8 @@ void TrapezoidalChannel::set_depth(double depth)
 {
     depth_ = depth;
 }
+
+double TrapezoidalChannel::calculate_top_width() const
+{
+    return bottomWidth_ + 2.0 * sideSlope_ * depth_;
+}

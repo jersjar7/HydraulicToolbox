@@ -10,6 +10,7 @@ public:
     virtual double calculate_wetted_perimeter() const = 0;
     virtual bool is_valid() const = 0;
     virtual void set_depth(double depth) = 0;
+    virtual double calculate_top_width() const = 0;
 
     double calculate_hydraulic_radius() const;
 };

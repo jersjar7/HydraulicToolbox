@@ -26,3 +26,8 @@ void TriangularChannel::set_depth(double depth)
 {
     depth_ = depth;
 }
+
+double TriangularChannel::calculate_top_width() const
+{
+    return 2.0 * sideSlope_ * depth_;
+}

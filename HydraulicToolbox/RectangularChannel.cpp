@@ -25,3 +25,8 @@ void RectangularChannel::set_depth(double depth)
 {
     depth_ = depth;
 }
+
+double RectangularChannel::calculate_top_width() const
+{
+    return width_;
+}

@@ -16,7 +16,7 @@ AnalysisResult Analyzer::solve_for_depth(Channel& channel, const Flow& flow, dou
     double manningN{flow.get_manning_n()};
 
     double minDepth{0.001};
-    double maxDepth{100.0};
+    double maxDepth{1000.0};
     double tolerance{0.001};
     int maxIterations{100};
 
@@ -32,6 +32,20 @@ AnalysisResult Analyzer::solve_for_depth(Channel& channel, const Flow& flow, dou
         if (std::abs(calculatedDischarge - targetDischarge) < tolerance)
         {
             result.normalDepth = midDepth;
+            result.velocity = targetDischarge / area;
+
+            double topWidth = channel.calculate_top_width();
+            double hydraulicDepth = area / topWidth;
+            double gravity = 9.81;
+            result.froudeNumber = result.velocity / std::sqrt(gravity * hydraulicDepth);
+
+            if (result.froudeNumber < 0.99)
+                result.flowRegime = FlowRegime::Subcritical;
+            else if (result.froudeNumber > 1.01)
+                result.flowRegime = FlowRegime::Supercritical;
+            else
+                result.flowRegime = FlowRegime::Critical;
+
             result.isValid = true;
             return result;
         }

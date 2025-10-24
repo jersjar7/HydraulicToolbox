@@ -12,6 +12,7 @@ public:
     double calculate_wetted_perimeter() const override;
     bool is_valid() const override;
     void set_depth(double depth) override;
+    double calculate_top_width() const override;
 
 private:
     double sideSlope_;
