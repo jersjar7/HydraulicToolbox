@@ -12,6 +12,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
+enable_testing()
+
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG release-1.12.1
+)
+FetchContent_MakeAvailable(googletest)
+
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp
@@ -24,17 +34,11 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
     )
-# Define target properties for Android with Qt 6 as:
-#    set_property(TARGET HydraulicToolbox APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
-#                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
-# For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
 else()
     if(ANDROID)
         add_library(HydraulicToolbox SHARED
             ${PROJECT_SOURCES}
         )
-# Define properties for Android with Qt 5 after find_package() calls as:
-#    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
     else()
         add_executable(HydraulicToolbox
             ${PROJECT_SOURCES}
@@ -44,9 +48,6 @@ endif()
 
 target_link_libraries(HydraulicToolbox PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
-# Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
-# If you are developing for iOS or macOS you should consider setting an
-# explicit, fixed bundle identifier manually though.
 if(${QT_VERSION} VERSION_LESS 6.1.0)
   set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.HydraulicToolbox)
 endif()
@@ -57,6 +58,28 @@ set_target_properties(HydraulicToolbox PROPERTIES
     MACOSX_BUNDLE TRUE
     WIN32_EXECUTABLE TRUE
 )
+
+add_executable(HydraulicTests
+    RectangularChannel_UnitTests.cpp
+    RectangularChannel.cpp
+    TriangularChannel_UnitTests.cpp
+    TriangularChannel.cpp
+    TrapezoidalChannel_UnitTests.cpp
+    TrapezoidalChannel.cpp
+    Channel.cpp
+    Flow_UnitTests.cpp
+    Flow.cpp
+    Analyzer_UnitTests.cpp
+    Analyzer.cpp
+)
+
+target_link_libraries(HydraulicTests
+    PRIVATE
+        GTest::gtest_main
+)
+
+include(GoogleTest)
+gtest_discover_tests(HydraulicTests)
 
 include(GNUInstallDirs)
 install(TARGETS HydraulicToolbox
