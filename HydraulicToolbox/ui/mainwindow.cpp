@@ -245,9 +245,10 @@ void MainWindow::on_calculation_completed(const CalculationResults& results)
     ProjectData& projectData = workflowController_->get_project_data();
     analysisResultsWidget_->update_results(results, projectData.useUsCustomary);
 
-    if(results.isValid && !visualizationRendered_)
+    if(results.isValid)
     {
-        vtkWidget_->show_content();
+        GeometryData& geometryData = workflowController_->get_geometry_data();
+        vtkWidget_->render_channel(geometryData, results);
         visualizationRendered_ = true;
     }
 }
