@@ -41,6 +41,8 @@ MainWindow::MainWindow(QWidget *parent)
             this, &MainWindow::on_hydraulic_parameters_data_changed);
     connect(workflowController_, &WorkflowController::current_stage_changed,
             this, &MainWindow::on_current_stage_changed);
+    connect(workflowController_, &WorkflowController::calculation_completed,
+            this, &MainWindow::on_calculation_completed);
 }
 
 MainWindow::~MainWindow()
@@ -171,9 +173,9 @@ void MainWindow::on_current_stage_changed(WorkflowStage newStage)
         stageStackedWidget_->setCurrentIndex(index);
     }
 
-    // Mark AnalysisResults stage as complete when navigated to
     if(newStage == WorkflowStage::AnalysisResults)
     {
+        workflowController_->perform_calculation();
         workflowController_->mark_stage_complete(WorkflowStage::AnalysisResults, true);
     }
 }
@@ -198,9 +200,7 @@ void MainWindow::on_geometry_data_changed()
 
     data.channelType = geometryDefinitionWidget_->get_channel_type();
     data.bottomWidth = geometryDefinitionWidget_->get_bottom_width();
-    data.depth = geometryDefinitionWidget_->get_depth();
     data.sideSlope = geometryDefinitionWidget_->get_side_slope();
-    data.length = geometryDefinitionWidget_->get_length();
     data.bedSlope = geometryDefinitionWidget_->get_bed_slope();
 
     bool isComplete = geometryDefinitionWidget_->is_complete();
@@ -226,4 +226,10 @@ void MainWindow::update_unit_system_indicator()
         unitSystemIndicator_->setText("US Customary");
     else
         unitSystemIndicator_->setText("SI Metric");
+}
+
+void MainWindow::on_calculation_completed(const CalculationResults& results)
+{
+    ProjectData& projectData = workflowController_->get_project_data();
+    analysisResultsWidget_->update_results(results, projectData.useUsCustomary);
 }

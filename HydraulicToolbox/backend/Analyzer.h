@@ -25,7 +25,7 @@ class Analyzer
 public:
     Analyzer() = default;
 
-    AnalysisResult solve_for_depth(Channel& channel, const Flow& flow, double slope) const;
+    AnalysisResult solve_for_depth(Channel& channel, const Flow& flow, double slope, double unitsCoefficient = 1.0) const;
 
 private:
 };

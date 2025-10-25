@@ -7,6 +7,8 @@ WorkflowController::WorkflowController(QObject* parent)
     , projectData_{}
     , geometryData_{}
     , hydraulicData_{}
+    , calculationResults_{}
+    , calculator_{}
 {
 }
 
@@ -70,4 +72,15 @@ GeometryData& WorkflowController::get_geometry_data()
 HydraulicData& WorkflowController::get_hydraulic_data()
 {
     return hydraulicData_;
+}
+
+void WorkflowController::perform_calculation()
+{
+    calculationResults_ = calculator_.calculate(projectData_, geometryData_, hydraulicData_);
+    emit calculation_completed(calculationResults_);
+}
+
+CalculationResults WorkflowController::get_calculation_results() const
+{
+    return calculationResults_;
 }

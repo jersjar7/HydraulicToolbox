@@ -3,7 +3,7 @@
 #include "Flow.h"
 #include <cmath>
 
-AnalysisResult Analyzer::solve_for_depth(Channel& channel, const Flow& flow, double slope) const
+AnalysisResult Analyzer::solve_for_depth(Channel& channel, const Flow& flow, double slope, double unitsCoefficient) const
 {
     AnalysisResult result;
 
@@ -27,7 +27,7 @@ AnalysisResult Analyzer::solve_for_depth(Channel& channel, const Flow& flow, dou
 
         double area{channel.calculate_area()};
         double hydraulicRadius{channel.calculate_hydraulic_radius()};
-        double calculatedDischarge = (1.0 / manningN) * area * std::pow(hydraulicRadius, 2.0/3.0) * std::sqrt(slope);
+        double calculatedDischarge = (unitsCoefficient / manningN) * area * std::pow(hydraulicRadius, 2.0/3.0) * std::sqrt(slope);
 
         if (std::abs(calculatedDischarge - targetDischarge) < tolerance)
         {

@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QLabel>
 #include <QVBoxLayout>
+#include "../backend/HydraulicCalculator.h"
 
 class AnalysisResultsWidget : public QWidget
 {
@@ -14,6 +15,8 @@ public:
     ~AnalysisResultsWidget();
 
     bool is_complete() const;
+
+    void update_results(const CalculationResults& results, bool useUsCustomary);
 
 signals:
     void data_changed();
@@ -27,6 +30,7 @@ private:
     QLabel* velocityLabel_;
     QLabel* froudeNumberLabel_;
     QLabel* flowRegimeLabel_;
+    QLabel* errorLabel_;
 };
 
 #endif // ANALYSISRESULTSWIDGET_H

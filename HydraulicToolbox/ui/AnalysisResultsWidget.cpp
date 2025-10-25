@@ -10,6 +10,7 @@ AnalysisResultsWidget::AnalysisResultsWidget(QWidget* parent)
     , velocityLabel_{nullptr}
     , froudeNumberLabel_{nullptr}
     , flowRegimeLabel_{nullptr}
+    , errorLabel_{nullptr}
 {
     setup_ui();
     apply_styling();
@@ -65,6 +66,24 @@ void AnalysisResultsWidget::setup_ui()
     formLayout->addRow("Flow Regime:", flowRegimeLabel_);
 
     resultsGroup->setLayout(formLayout);
+
+    errorLabel_ = new QLabel();
+    errorLabel_->setWordWrap(true);
+    errorLabel_->setAlignment(Qt::AlignCenter);
+    errorLabel_->setStyleSheet(
+        "QLabel { "
+        "  color: #ff6b6b; "
+        "  font-size: 13px; "
+        "  font-weight: bold; "
+        "  padding: 10px; "
+        "  background-color: #4a2020; "
+        "  border: 1px solid #ff6b6b; "
+        "  border-radius: 3px; "
+        "}"
+        );
+    errorLabel_->setVisible(false);
+    mainLayout->addWidget(errorLabel_);
+
     mainLayout->addWidget(resultsGroup);
 
     mainLayout->addStretch();
@@ -90,4 +109,31 @@ void AnalysisResultsWidget::apply_styling()
         "  left: 10px; "
         "}"
         );
+}
+
+void AnalysisResultsWidget::update_results(const CalculationResults& results, bool useUsCustomary)
+{
+    if(!results.isValid)
+    {
+        errorLabel_->setText(results.errorMessage);
+        errorLabel_->setVisible(true);
+        placeholderLabel_->setVisible(true);
+
+        normalDepthLabel_->setText("--");
+        velocityLabel_->setText("--");
+        froudeNumberLabel_->setText("--");
+        flowRegimeLabel_->setText("--");
+        return;
+    }
+
+    errorLabel_->setVisible(false);
+    placeholderLabel_->setVisible(false);
+
+    QString depthUnit = useUsCustomary ? "ft" : "m";
+    QString velocityUnit = useUsCustomary ? "ft/s" : "m/s";
+
+    normalDepthLabel_->setText(QString::number(results.normalDepth, 'f', 3) + " " + depthUnit);
+    velocityLabel_->setText(QString::number(results.velocity, 'f', 3) + " " + velocityUnit);
+    froudeNumberLabel_->setText(QString::number(results.froudeNumber, 'f', 3));
+    flowRegimeLabel_->setText(results.flowRegime);
 }

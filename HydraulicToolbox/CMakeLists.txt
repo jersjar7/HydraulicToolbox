@@ -64,6 +64,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ui/AnalysisResultsWidget.cpp
         ui/ExportWidget.h
         ui/ExportWidget.cpp
+        backend/HydraulicCalculator.h
+        backend/HydraulicCalculator.cpp
+        ui/ProjectDataStructures.h
     )
 else()
     if(ANDROID)

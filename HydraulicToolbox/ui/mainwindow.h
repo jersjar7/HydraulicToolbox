@@ -37,6 +37,7 @@ private slots:
     void on_geometry_data_changed();
     void on_hydraulic_parameters_data_changed();
     void on_current_stage_changed(WorkflowStage newStage);
+    void on_calculation_completed(const CalculationResults& results);
 
 private:
     void setup_ui();

@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QString>
 #include <array>
+#include "../backend/HydraulicCalculator.h"
+#include "ProjectDataStructures.h"
 
 enum class WorkflowStage
 {
@@ -12,29 +14,6 @@ enum class WorkflowStage
     HydraulicParameters = 2,
     AnalysisResults = 3,
     Export = 4
-};
-
-struct ProjectData
-{
-    QString projectName;
-    QString location;
-    bool useUsCustomary{true};
-};
-
-struct GeometryData
-{
-    QString channelType;
-    double bottomWidth{0.0};
-    double depth{0.0};
-    double sideSlope{0.0};
-    double length{0.0};
-    double bedSlope{0.0};
-};
-
-struct HydraulicData
-{
-    double discharge{0.0};
-    double manningN{0.0};
 };
 
 class WorkflowController : public QObject
@@ -55,9 +34,13 @@ public:
     GeometryData& get_geometry_data();
     HydraulicData& get_hydraulic_data();
 
+    void perform_calculation();
+    CalculationResults get_calculation_results() const;
+
 signals:
     void current_stage_changed(WorkflowStage newStage);
     void stage_completion_changed(WorkflowStage stage, bool complete);
+    void calculation_completed(const CalculationResults& results);
 
 private:
     WorkflowStage currentStage_;
@@ -66,6 +49,9 @@ private:
     ProjectData projectData_;
     GeometryData geometryData_;
     HydraulicData hydraulicData_;
+
+    CalculationResults calculationResults_;
+    HydraulicCalculator calculator_;
 };
 
 #endif // WORKFLOWCONTROLLER_H

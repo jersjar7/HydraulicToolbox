@@ -8,9 +8,7 @@ GeometryDefinitionWidget::GeometryDefinitionWidget(QWidget* parent)
     : QWidget(parent)
     , channelTypeCombo_{nullptr}
     , bottomWidthEdit_{nullptr}
-    , depthEdit_{nullptr}
     , sideSlopeEdit_{nullptr}
-    , lengthEdit_{nullptr}
     , bedSlopeEdit_{nullptr}
     , bottomWidthLabel_{nullptr}
     , sideSlopeLabel_{nullptr}
@@ -22,9 +20,7 @@ GeometryDefinitionWidget::GeometryDefinitionWidget(QWidget* parent)
     connect(channelTypeCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &GeometryDefinitionWidget::on_channel_type_changed);
     connect(bottomWidthEdit_, &QLineEdit::textChanged, this, &GeometryDefinitionWidget::data_changed);
-    connect(depthEdit_, &QLineEdit::textChanged, this, &GeometryDefinitionWidget::data_changed);
     connect(sideSlopeEdit_, &QLineEdit::textChanged, this, &GeometryDefinitionWidget::data_changed);
-    connect(lengthEdit_, &QLineEdit::textChanged, this, &GeometryDefinitionWidget::data_changed);
     connect(bedSlopeEdit_, &QLineEdit::textChanged, this, &GeometryDefinitionWidget::data_changed);
 }
 
@@ -42,19 +38,9 @@ double GeometryDefinitionWidget::get_bottom_width() const
     return bottomWidthEdit_->text().toDouble();
 }
 
-double GeometryDefinitionWidget::get_depth() const
-{
-    return depthEdit_->text().toDouble();
-}
-
 double GeometryDefinitionWidget::get_side_slope() const
 {
     return sideSlopeEdit_->text().toDouble();
-}
-
-double GeometryDefinitionWidget::get_length() const
-{
-    return lengthEdit_->text().toDouble();
 }
 
 double GeometryDefinitionWidget::get_bed_slope() const
@@ -66,8 +52,7 @@ bool GeometryDefinitionWidget::is_complete() const
 {
     QString channelType = channelTypeCombo_->currentText();
 
-    if(depthEdit_->text().isEmpty() || lengthEdit_->text().isEmpty() || bedSlopeEdit_->text().isEmpty())
-        return false;
+    if(bedSlopeEdit_->text().isEmpty()) return false;
 
     if(channelType == "Rectangular")
     {
@@ -126,7 +111,6 @@ void GeometryDefinitionWidget::setup_ui()
             );
     }
 
-
     typeLayout->addWidget(channelTypeCombo_);
     channelTypeGroup->setLayout(typeLayout);
     mainLayout->addWidget(channelTypeGroup);
@@ -142,21 +126,11 @@ void GeometryDefinitionWidget::setup_ui()
     bottomWidthEdit_->setMinimumWidth(300);
     formLayout_->addRow(bottomWidthLabel_, bottomWidthEdit_);
 
-    depthEdit_ = new QLineEdit();
-    depthEdit_->setPlaceholderText("Enter depth");
-    depthEdit_->setMinimumWidth(300);
-    formLayout_->addRow("Depth:", depthEdit_);
-
     sideSlopeLabel_ = new QLabel("Side Slope (H:V):");
     sideSlopeEdit_ = new QLineEdit();
     sideSlopeEdit_->setPlaceholderText("Enter side slope ratio");
     sideSlopeEdit_->setMinimumWidth(300);
     formLayout_->addRow(sideSlopeLabel_, sideSlopeEdit_);
-
-    lengthEdit_ = new QLineEdit();
-    lengthEdit_->setPlaceholderText("Enter channel length");
-    lengthEdit_->setMinimumWidth(300);
-    formLayout_->addRow("Channel Length:", lengthEdit_);
 
     bedSlopeEdit_ = new QLineEdit();
     bedSlopeEdit_->setPlaceholderText("Enter bed slope (m/m or ft/ft)");
