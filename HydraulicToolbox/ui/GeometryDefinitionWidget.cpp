@@ -102,15 +102,24 @@ void GeometryDefinitionWidget::setup_ui()
 
     QListView* comboListView = new QListView(channelTypeCombo_);
     comboListView->setSpacing(0);
+    comboListView->setFrameShape(QFrame::NoFrame);
     channelTypeCombo_->setView(comboListView);
     channelTypeCombo_->setItemDelegate(new QStyledItemDelegate(channelTypeCombo_));
+
+    comboListView->setStyleSheet(
+        "QListView { "
+        "  background-color: #4a4a4a; "
+        "  border: none; "
+        "  outline: none; "
+        "}"
+        );
 
     if(channelTypeCombo_->view()->parentWidget())
     {
         channelTypeCombo_->view()->parentWidget()->setStyleSheet(
             "QWidget { "
             "  background-color: #4a4a4a; "
-            "  border: 1px solid #5a5a5a; "
+            "  border: none; "
             "  padding: 0px; "
             "  margin: 0px; "
             "}"
@@ -175,23 +184,28 @@ void GeometryDefinitionWidget::apply_styling()
         "  font-size: 13px; "
         "}"
         "QLineEdit:focus { border: 1px solid #0078d4; }"
+
+        // FIXED: Combobox styling
         "QComboBox { "
         "  background-color: #4a4a4a; "
         "  color: #ffffff; "
         "  border: 1px solid #5a5a5a; "
         "  border-radius: 3px; "
-        "  padding: 6px; "
+        "  padding: 6px 20px 6px 6px; "  // Extra right padding for arrow
         "  font-size: 13px; "
         "}"
         "QComboBox:focus { border: 1px solid #0078d4; }"
+
+        // FIXED: Drop-down button - make completely transparent
         "QComboBox::drop-down { "
+        "  background-color: transparent; "  // Changed from #4a4a4a
         "  border: none; "
         "  width: 20px; "
+        "  subcontrol-origin: padding; "
+        "  subcontrol-position: center right; "
         "}"
-        "QComboBox::drop-down:button { "  // CRITICAL: This fixes the grey square
-        "  background-color: #4a4a4a; "
-        "  border: none; "
-        "}"
+
+        // Arrow styling
         "QComboBox::down-arrow { "
         "  image: none; "
         "  border-left: 4px solid transparent; "
@@ -199,19 +213,26 @@ void GeometryDefinitionWidget::apply_styling()
         "  border-top: 6px solid #c0c0c0; "
         "  width: 0; "
         "  height: 0; "
+        "  margin-right: 6px; "
         "}"
+
+        // FIXED: Item view styling - remove padding and margin
         "QComboBox QAbstractItemView { "
         "  background-color: #4a4a4a; "
         "  color: #ffffff; "
         "  selection-background-color: #0078d4; "
-        "  border: 1px solid #5a5a5a; "  // Keep this border
-        "  outline: none; "  // CRITICAL: Remove outline/frame
-        "  padding: 0; "
-        "  margin: 0; "
+        "  border: 1px solid #5a5a5a; "
+        "  padding: 0px; "     // Remove padding
+        "  margin: 0px; "      // Remove margin
+        "  outline: none; "    // Remove focus outline
         "}"
+
+        // Item styling with proper padding
         "QComboBox QAbstractItemView::item { "
         "  padding: 6px; "
+        "  min-height: 20px; "
         "}"
+
         "QGroupBox { "
         "  color: #c0c0c0; "
         "  font-size: 13px; "

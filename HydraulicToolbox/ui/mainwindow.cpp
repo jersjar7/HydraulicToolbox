@@ -22,6 +22,10 @@ MainWindow::MainWindow(QWidget *parent)
     , stageStackedWidget_{nullptr}
     , projectSetupWidget_{nullptr}
     , geometryDefinitionWidget_{nullptr}
+    , hydraulicParametersWidget_{nullptr}
+    , analysisResultsWidget_{nullptr}
+    , exportWidget_{nullptr}
+
 {
     ui->setupUi(this);
 
@@ -33,6 +37,8 @@ MainWindow::MainWindow(QWidget *parent)
             this, &MainWindow::on_project_setup_data_changed);
     connect(geometryDefinitionWidget_, &GeometryDefinitionWidget::data_changed,
             this, &MainWindow::on_geometry_data_changed);
+    connect(hydraulicParametersWidget_, &HydraulicParametersWidget::data_changed,
+            this, &MainWindow::on_hydraulic_parameters_data_changed);
     connect(workflowController_, &WorkflowController::current_stage_changed,
             this, &MainWindow::on_current_stage_changed);
 }
@@ -112,9 +118,15 @@ void MainWindow::setup_layout()
 
     projectSetupWidget_ = new ProjectSetupWidget();
     geometryDefinitionWidget_ = new GeometryDefinitionWidget();
+    hydraulicParametersWidget_ = new HydraulicParametersWidget();
+    analysisResultsWidget_ = new AnalysisResultsWidget();
+    exportWidget_ = new ExportWidget();
 
     stageStackedWidget_->addWidget(projectSetupWidget_);
     stageStackedWidget_->addWidget(geometryDefinitionWidget_);
+    stageStackedWidget_->addWidget(hydraulicParametersWidget_);
+    stageStackedWidget_->addWidget(analysisResultsWidget_);
+    stageStackedWidget_->addWidget(exportWidget_);
 
     parameterLayout->addWidget(stageStackedWidget_);
 
@@ -158,6 +170,12 @@ void MainWindow::on_current_stage_changed(WorkflowStage newStage)
     {
         stageStackedWidget_->setCurrentIndex(index);
     }
+
+    // Mark AnalysisResults stage as complete when navigated to
+    if(newStage == WorkflowStage::AnalysisResults)
+    {
+        workflowController_->mark_stage_complete(WorkflowStage::AnalysisResults, true);
+    }
 }
 
 void MainWindow::on_project_setup_data_changed()
@@ -187,6 +205,17 @@ void MainWindow::on_geometry_data_changed()
 
     bool isComplete = geometryDefinitionWidget_->is_complete();
     workflowController_->mark_stage_complete(WorkflowStage::GeometryDefinition, isComplete);
+}
+
+void MainWindow::on_hydraulic_parameters_data_changed()
+{
+    HydraulicData& data = workflowController_->get_hydraulic_data();
+
+    data.discharge = hydraulicParametersWidget_->get_discharge();
+    data.manningN = hydraulicParametersWidget_->get_mannings_n();
+
+    bool isComplete = hydraulicParametersWidget_->is_complete();
+    workflowController_->mark_stage_complete(WorkflowStage::HydraulicParameters, isComplete);
 }
 
 void MainWindow::update_unit_system_indicator()

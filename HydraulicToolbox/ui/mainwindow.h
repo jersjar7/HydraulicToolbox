@@ -11,8 +11,11 @@
 #include <QStackedWidget>
 #include "ProjectSetupWidget.h"
 #include "GeometryDefinitionWidget.h"
+#include "HydraulicParametersWidget.h"
+#include "AnalysisResultsWidget.h"
 #include "WorkflowController.h"
 #include "WorkflowTabBar.h"
+#include "ExportWidget.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -32,6 +35,7 @@ private slots:
     void on_tab_clicked(WorkflowStage stage);
     void on_project_setup_data_changed();
     void on_geometry_data_changed();
+    void on_hydraulic_parameters_data_changed();
     void on_current_stage_changed(WorkflowStage newStage);
 
 private:
@@ -65,6 +69,10 @@ private:
     // Workflow widgets
     ProjectSetupWidget* projectSetupWidget_;
     GeometryDefinitionWidget* geometryDefinitionWidget_;
+    HydraulicParametersWidget* hydraulicParametersWidget_;
+    AnalysisResultsWidget* analysisResultsWidget_;
+    ExportWidget* exportWidget_;
+
 };
 
 #endif // MAINWINDOW_H

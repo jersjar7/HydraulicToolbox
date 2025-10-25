@@ -58,6 +58,12 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ui/WorkflowTabBar.cpp
         ui/GeometryDefinitionWidget.h
         ui/GeometryDefinitionWidget.cpp
+        ui/HydraulicParametersWidget.h
+        ui/HydraulicParametersWidget.cpp
+        ui/AnalysisResultsWidget.h
+        ui/AnalysisResultsWidget.cpp
+        ui/ExportWidget.h
+        ui/ExportWidget.cpp
     )
 else()
     if(ANDROID)
@@ -97,6 +103,7 @@ add_executable(HydraulicTests
     tests/Flow_UnitTests.cpp
     tests/Analyzer_UnitTests.cpp
     ${BACKEND_SOURCES}
+
 
 )
 
