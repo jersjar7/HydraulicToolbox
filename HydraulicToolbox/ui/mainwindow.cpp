@@ -27,7 +27,12 @@ MainWindow::MainWindow(QWidget *parent)
     , exportWidget_{nullptr}
     , vtkWidget_{nullptr}
     , visualizationRendered_{false}
-
+    , viewTopButton_{nullptr}
+    , viewFrontButton_{nullptr}
+    , viewRightButton_{nullptr}
+    , viewIsoButton_{nullptr}
+    , viewResetButton_{nullptr}
+    , viewControlsContainer_{nullptr}
 {
     ui->setupUi(this);
 
@@ -58,10 +63,11 @@ void MainWindow::setup_ui()
 {
     setup_menu_bar();
     setup_layout();
+    setup_view_controls();
     apply_dark_theme();
 
     setWindowTitle("Hydraulic Toolbox");
-    resize(1200, 800);
+    resize(1400, 800);
 }
 
 void MainWindow::setup_menu_bar()
@@ -110,7 +116,6 @@ void MainWindow::setup_layout()
 
     visualizationArea_ = new QWidget();
     visualizationArea_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
     visualizationArea_->setMinimumHeight(600);
 
     QVBoxLayout* visualizationLayout = new QVBoxLayout(visualizationArea_);
@@ -250,5 +255,86 @@ void MainWindow::on_calculation_completed(const CalculationResults& results)
         GeometryData& geometryData = workflowController_->get_geometry_data();
         vtkWidget_->render_channel(geometryData, results);
         visualizationRendered_ = true;
+    }
+}
+
+void MainWindow::setup_view_controls()
+{
+    // Create container parented to visualizationArea_ but NOT added to its layout
+    viewControlsContainer_ = new QWidget(visualizationArea_);
+    viewControlsContainer_->setStyleSheet("QWidget { background-color: rgba(60, 60, 60, 200); border-radius: 5px; }");
+
+    QHBoxLayout* controlsLayout = new QHBoxLayout(viewControlsContainer_);
+    controlsLayout->setContentsMargins(6, 6, 6, 6);
+    controlsLayout->setSpacing(4);
+
+    QString buttonStyle =
+        "QPushButton { "
+        "  background-color: #4a4a4a; "
+        "  color: #ffffff; "
+        "  border: 1px solid #5a5a5a; "
+        "  border-radius: 3px; "
+        "  padding: 5px 10px; "
+        "  font-size: 10px; "
+        "}"
+        "QPushButton:hover { "
+        "  background-color: #5a5a5a; "
+        "  border: 1px solid #0078d4; "
+        "}"
+        "QPushButton:pressed { "
+        "  background-color: #3a3a3a; "
+        "}";
+
+    viewTopButton_ = new QPushButton("Top", viewControlsContainer_);
+    viewTopButton_->setStyleSheet(buttonStyle);
+    viewTopButton_->setToolTip("View from top");
+    controlsLayout->addWidget(viewTopButton_);
+
+    viewFrontButton_ = new QPushButton("Front", viewControlsContainer_);
+    viewFrontButton_->setStyleSheet(buttonStyle);
+    viewFrontButton_->setToolTip("View from front");
+    controlsLayout->addWidget(viewFrontButton_);
+
+    viewRightButton_ = new QPushButton("Right", viewControlsContainer_);
+    viewRightButton_->setStyleSheet(buttonStyle);
+    viewRightButton_->setToolTip("View from right");
+    controlsLayout->addWidget(viewRightButton_);
+
+    viewIsoButton_ = new QPushButton("Iso", viewControlsContainer_);
+    viewIsoButton_->setStyleSheet(buttonStyle);
+    viewIsoButton_->setToolTip("Isometric view");
+    controlsLayout->addWidget(viewIsoButton_);
+
+    viewResetButton_ = new QPushButton("Reset", viewControlsContainer_);
+    viewResetButton_->setStyleSheet(buttonStyle);
+    viewResetButton_->setToolTip("Reset to default view");
+    controlsLayout->addWidget(viewResetButton_);
+
+    // Size the container based on its content
+    viewControlsContainer_->setFixedSize(310, 35);
+
+    // Position will be set in resizeEvent
+    viewControlsContainer_->raise();
+    viewControlsContainer_->show();
+
+    connect(viewTopButton_, &QPushButton::clicked, vtkWidget_, &VtkWidget::set_view_top);
+    connect(viewFrontButton_, &QPushButton::clicked, vtkWidget_, &VtkWidget::set_view_front);
+    connect(viewRightButton_, &QPushButton::clicked, vtkWidget_, &VtkWidget::set_view_right);
+    connect(viewIsoButton_, &QPushButton::clicked, vtkWidget_, &VtkWidget::set_view_isometric);
+    connect(viewResetButton_, &QPushButton::clicked, vtkWidget_, &VtkWidget::reset_view);
+}
+
+void MainWindow::resizeEvent(QResizeEvent* event)
+{
+    QMainWindow::resizeEvent(event);
+
+    if (viewControlsContainer_ && visualizationArea_)
+    {
+        // Use the actual widget width to position from the right edge
+        int x = width() - viewControlsContainer_->width() - 20;  // 20px from right edge of window
+        int y = 30;  // Below menu bar
+
+        viewControlsContainer_->move(x, y);
+        viewControlsContainer_->raise();
     }
 }

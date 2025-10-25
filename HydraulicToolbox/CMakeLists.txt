@@ -17,6 +17,7 @@ find_package(VTK REQUIRED COMPONENTS
     FiltersSources
     RenderingCore
     RenderingOpenGL2
+    RenderingAnnotation
     InteractionStyle
     GUISupportQt
 )

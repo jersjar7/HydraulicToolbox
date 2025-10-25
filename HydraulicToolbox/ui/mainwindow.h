@@ -9,6 +9,7 @@
 #include <QMenu>
 #include <QAction>
 #include <QStackedWidget>
+#include <QPushButton>
 #include "ProjectSetupWidget.h"
 #include "GeometryDefinitionWidget.h"
 #include "HydraulicParametersWidget.h"
@@ -17,6 +18,7 @@
 #include "WorkflowTabBar.h"
 #include "ExportWidget.h"
 #include "VtkWidget.h"
+#include <QResizeEvent>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -39,11 +41,13 @@ private slots:
     void on_hydraulic_parameters_data_changed();
     void on_current_stage_changed(WorkflowStage newStage);
     void on_calculation_completed(const CalculationResults& results);
+    void resizeEvent(QResizeEvent* event) override;
 
 private:
     void setup_ui();
     void setup_menu_bar();
     void setup_layout();
+    void setup_view_controls();
     void apply_dark_theme();
     void update_unit_system_indicator();
 
@@ -51,14 +55,13 @@ private:
 
     Ui::MainWindow* ui;
 
-    // Layout components
     QSplitter* mainSplitter_;
     QWidget* visualizationArea_;
     VtkWidget* vtkWidget_;
     QWidget* parameterPanel_;
     QLabel* unitSystemIndicator_;
+    QWidget* viewControlsContainer_;
 
-    // Menu components
     QMenu* fileMenu_;
     QAction* newProjectAction_;
     QAction* openProjectAction_;
@@ -66,18 +69,21 @@ private:
     QAction* saveAsAction_;
     QAction* exitAction_;
 
-    // Workflow components
     WorkflowController* workflowController_;
     WorkflowTabBar* workflowTabBar_;
     QStackedWidget* stageStackedWidget_;
 
-    // Workflow widgets
     ProjectSetupWidget* projectSetupWidget_;
     GeometryDefinitionWidget* geometryDefinitionWidget_;
     HydraulicParametersWidget* hydraulicParametersWidget_;
     AnalysisResultsWidget* analysisResultsWidget_;
     ExportWidget* exportWidget_;
 
+    QPushButton* viewTopButton_;
+    QPushButton* viewFrontButton_;
+    QPushButton* viewRightButton_;
+    QPushButton* viewIsoButton_;
+    QPushButton* viewResetButton_;
 };
 
 #endif // MAINWINDOW_H
