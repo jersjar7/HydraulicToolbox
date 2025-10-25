@@ -36,13 +36,15 @@ private:
     void setup_vtk_pipeline();
     void setup_camera();
     void setup_orientation_marker();
+    void setup_lighting();
     void set_camera_view(double posX, double posY, double posZ,
                          double upX, double upY, double upZ);
 
     vtkSmartPointer<vtkRenderer> renderer_;
     vtkSmartPointer<vtkGenericOpenGLRenderWindow> renderWindow_;
     vtkSmartPointer<vtkRenderWindowInteractor> interactor_;
-    vtkSmartPointer<vtkActor> actor_;
+    vtkSmartPointer<vtkActor> channelBottomActor_;
+    vtkSmartPointer<vtkActor> channelWallsActor_;
     vtkSmartPointer<vtkActor> waterActor_;
     vtkSmartPointer<vtkAnnotatedCubeActor> cubeActor_;
     vtkSmartPointer<vtkOrientationMarkerWidget> orientationWidget_;
