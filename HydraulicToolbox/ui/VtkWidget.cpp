@@ -21,6 +21,7 @@ VtkWidget::VtkWidget(QWidget* parent)
     , interactor_{vtkSmartPointer<vtkRenderWindowInteractor>::New()}
     , cubeActor_{vtkSmartPointer<vtkAnnotatedCubeActor>::New()}
     , orientationWidget_{vtkSmartPointer<vtkOrientationMarkerWidget>::New()}
+    , waterActor_{vtkSmartPointer<vtkActor>::New()}
     , focalPointX_{0.0}
     , focalPointY_{0.0}
     , focalPointZ_{0.0}
@@ -118,42 +119,77 @@ void VtkWidget::render_channel(const GeometryData& geometry, const CalculationRe
     double channelDepth = normalDepth * 1.2;
     double length = width * 10.0;
 
-    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+    // ===== CREATE CHANNEL GEOMETRY =====
+    vtkSmartPointer<vtkPoints> channelPoints = vtkSmartPointer<vtkPoints>::New();
 
-    points->InsertNextPoint(0.0, 0.0, 0.0);
-    points->InsertNextPoint(length, 0.0, 0.0);
-    points->InsertNextPoint(length, 0.0, width);
-    points->InsertNextPoint(0.0, 0.0, width);
+    // Bottom corners (Y = 0)
+    channelPoints->InsertNextPoint(0.0, 0.0, 0.0);        // 0
+    channelPoints->InsertNextPoint(length, 0.0, 0.0);     // 1
+    channelPoints->InsertNextPoint(length, 0.0, width);   // 2
+    channelPoints->InsertNextPoint(0.0, 0.0, width);      // 3
 
-    points->InsertNextPoint(0.0, channelDepth, 0.0);
-    points->InsertNextPoint(length, channelDepth, 0.0);
-    points->InsertNextPoint(length, channelDepth, width);
-    points->InsertNextPoint(0.0, channelDepth, width);
+    // Top corners (Y = channelDepth)
+    channelPoints->InsertNextPoint(0.0, channelDepth, 0.0);        // 4
+    channelPoints->InsertNextPoint(length, channelDepth, 0.0);     // 5
+    channelPoints->InsertNextPoint(length, channelDepth, width);   // 6
+    channelPoints->InsertNextPoint(0.0, channelDepth, width);      // 7
 
-    vtkSmartPointer<vtkCellArray> cells = vtkSmartPointer<vtkCellArray>::New();
+    vtkSmartPointer<vtkCellArray> channelCells = vtkSmartPointer<vtkCellArray>::New();
 
+    // Bottom face (darker - sediment/concrete)
     vtkIdType bottom[4] = {0, 1, 2, 3};
-    cells->InsertNextCell(4, bottom);
+    channelCells->InsertNextCell(4, bottom);
 
+    // Left wall
     vtkIdType leftWall[4] = {0, 1, 5, 4};
-    cells->InsertNextCell(4, leftWall);
+    channelCells->InsertNextCell(4, leftWall);
 
+    // Right wall
     vtkIdType rightWall[4] = {3, 2, 6, 7};
-    cells->InsertNextCell(4, rightWall);
+    channelCells->InsertNextCell(4, rightWall);
 
-    vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
-    polyData->SetPoints(points);
-    polyData->SetPolys(cells);
+    vtkSmartPointer<vtkPolyData> channelPolyData = vtkSmartPointer<vtkPolyData>::New();
+    channelPolyData->SetPoints(channelPoints);
+    channelPolyData->SetPolys(channelCells);
 
-    vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    mapper->SetInputData(polyData);
+    vtkSmartPointer<vtkPolyDataMapper> channelMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    channelMapper->SetInputData(channelPolyData);
 
-    actor_->SetMapper(mapper);
-    actor_->GetProperty()->SetColor(0.6, 0.6, 0.6);
+    actor_->SetMapper(channelMapper);
+    actor_->GetProperty()->SetColor(0.5, 0.5, 0.5);  // Gray walls
     actor_->SetVisibility(1);
 
     renderer_->AddActor(actor_);
 
+    // ===== CREATE WATER SURFACE =====
+    vtkSmartPointer<vtkPoints> waterPoints = vtkSmartPointer<vtkPoints>::New();
+
+    // Water surface at normal depth
+    double waterLevel = normalDepth;
+    waterPoints->InsertNextPoint(0.0, waterLevel, 0.0);
+    waterPoints->InsertNextPoint(length, waterLevel, 0.0);
+    waterPoints->InsertNextPoint(length, waterLevel, width);
+    waterPoints->InsertNextPoint(0.0, waterLevel, width);
+
+    vtkSmartPointer<vtkCellArray> waterCells = vtkSmartPointer<vtkCellArray>::New();
+    vtkIdType waterFace[4] = {0, 1, 2, 3};
+    waterCells->InsertNextCell(4, waterFace);
+
+    vtkSmartPointer<vtkPolyData> waterPolyData = vtkSmartPointer<vtkPolyData>::New();
+    waterPolyData->SetPoints(waterPoints);
+    waterPolyData->SetPolys(waterCells);
+
+    vtkSmartPointer<vtkPolyDataMapper> waterMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    waterMapper->SetInputData(waterPolyData);
+
+    waterActor_->SetMapper(waterMapper);
+    waterActor_->GetProperty()->SetColor(0.0, 0.4, 0.8);  // Blue water
+    waterActor_->GetProperty()->SetOpacity(0.6);           // 60% opaque (40% transparent)
+    waterActor_->SetVisibility(1);
+
+    renderer_->AddActor(waterActor_);
+
+    // ===== SETUP CAMERA =====
     renderer_->ResetCamera();
 
     vtkCamera* camera = renderer_->GetActiveCamera();

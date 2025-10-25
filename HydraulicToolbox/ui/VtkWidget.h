@@ -43,6 +43,7 @@ private:
     vtkSmartPointer<vtkGenericOpenGLRenderWindow> renderWindow_;
     vtkSmartPointer<vtkRenderWindowInteractor> interactor_;
     vtkSmartPointer<vtkActor> actor_;
+    vtkSmartPointer<vtkActor> waterActor_;
     vtkSmartPointer<vtkAnnotatedCubeActor> cubeActor_;
     vtkSmartPointer<vtkOrientationMarkerWidget> orientationWidget_;
 
