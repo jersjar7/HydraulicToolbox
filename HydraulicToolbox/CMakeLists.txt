@@ -11,6 +11,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+find_package(VTK REQUIRED COMPONENTS
+    CommonCore
+    CommonDataModel
+    FiltersSources
+    RenderingCore
+    RenderingOpenGL2
+    InteractionStyle
+    GUISupportQt
+)
 
 enable_testing()
 
@@ -85,7 +94,16 @@ target_include_directories(HydraulicToolbox PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/ui
 )
 
-target_link_libraries(HydraulicToolbox PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(HydraulicToolbox PRIVATE
+    Qt${QT_VERSION_MAJOR}::Widgets
+    ${VTK_LIBRARIES}
+)
+
+# VTK module auto-initialization
+vtk_module_autoinit(
+    TARGETS HydraulicToolbox
+    MODULES ${VTK_LIBRARIES}
+)
 
 if(${QT_VERSION} VERSION_LESS 6.1.0)
   set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.HydraulicToolbox)
