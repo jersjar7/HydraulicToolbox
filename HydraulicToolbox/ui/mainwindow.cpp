@@ -25,6 +25,8 @@ MainWindow::MainWindow(QWidget *parent)
     , hydraulicParametersWidget_{nullptr}
     , analysisResultsWidget_{nullptr}
     , exportWidget_{nullptr}
+    , vtkWidget_{nullptr}
+    , visualizationRendered_{false}
 
 {
     ui->setupUi(this);
@@ -43,6 +45,8 @@ MainWindow::MainWindow(QWidget *parent)
             this, &MainWindow::on_current_stage_changed);
     connect(workflowController_, &WorkflowController::calculation_completed,
             this, &MainWindow::on_calculation_completed);
+
+    workflowController_->set_current_stage(WorkflowStage::ProjectSetup);
 }
 
 MainWindow::~MainWindow()
@@ -105,8 +109,16 @@ void MainWindow::setup_layout()
     mainSplitter_ = new QSplitter(Qt::Vertical, centralWidget);
 
     visualizationArea_ = new QWidget();
-    visualizationArea_->setStyleSheet("QWidget { background-color: #d3d3d3; }");
     visualizationArea_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    visualizationArea_->setMinimumHeight(600);
+
+    QVBoxLayout* visualizationLayout = new QVBoxLayout(visualizationArea_);
+    visualizationLayout->setContentsMargins(0, 0, 0, 0);
+    visualizationLayout->setSpacing(0);
+
+    vtkWidget_ = new VtkWidget();
+    visualizationLayout->addWidget(vtkWidget_);
 
     parameterPanel_ = new QWidget();
     parameterPanel_->setStyleSheet("QWidget { background-color: #3c3c3c; }");
@@ -232,4 +244,10 @@ void MainWindow::on_calculation_completed(const CalculationResults& results)
 {
     ProjectData& projectData = workflowController_->get_project_data();
     analysisResultsWidget_->update_results(results, projectData.useUsCustomary);
+
+    if(results.isValid && !visualizationRendered_)
+    {
+        vtkWidget_->show_content();
+        visualizationRendered_ = true;
+    }
 }

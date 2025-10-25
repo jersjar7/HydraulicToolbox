@@ -16,6 +16,7 @@
 #include "WorkflowController.h"
 #include "WorkflowTabBar.h"
 #include "ExportWidget.h"
+#include "VtkWidget.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -46,11 +47,14 @@ private:
     void apply_dark_theme();
     void update_unit_system_indicator();
 
+    bool visualizationRendered_;
+
     Ui::MainWindow* ui;
 
     // Layout components
     QSplitter* mainSplitter_;
     QWidget* visualizationArea_;
+    VtkWidget* vtkWidget_;
     QWidget* parameterPanel_;
     QLabel* unitSystemIndicator_;
 
