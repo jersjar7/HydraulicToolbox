@@ -4,7 +4,7 @@
 #include "Channel.h"
 #include "Flow.h"
 #include "Analyzer.h"
-#include "../ui/ProjectDataStructures.h"
+#include "ProjectDataStructures.h"
 #include <memory>
 #include <QString>
 

@@ -3,22 +3,13 @@
 
 #include <QMainWindow>
 #include <QSplitter>
-#include <QWidget>
 #include <QLabel>
 #include <QMenuBar>
 #include <QMenu>
 #include <QAction>
-#include <QStackedWidget>
-#include <QPushButton>
-#include "ProjectSetupWidget.h"
-#include "GeometryDefinitionWidget.h"
-#include "HydraulicParametersWidget.h"
-#include "AnalysisResultsWidget.h"
 #include "WorkflowController.h"
-#include "WorkflowTabBar.h"
-#include "ExportWidget.h"
-#include "VtkWidget.h"
-#include <QResizeEvent>
+#include "VisualizationPanel.h"
+#include "ParameterPanel.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -41,27 +32,20 @@ private slots:
     void on_hydraulic_parameters_data_changed();
     void on_current_stage_changed(WorkflowStage newStage);
     void on_calculation_completed(const CalculationResults& results);
-    void resizeEvent(QResizeEvent* event) override;
 
 private:
     void setup_ui();
     void setup_menu_bar();
     void setup_layout();
-    void setup_view_controls();
     void apply_dark_theme();
     void update_unit_system_indicator();
-    void adjust_parameter_panel_height(WorkflowStage stage);
-
-    bool visualizationRendered_;
 
     Ui::MainWindow* ui;
 
     QSplitter* mainSplitter_;
-    QWidget* visualizationArea_;
-    VtkWidget* vtkWidget_;
-    QWidget* parameterPanel_;
+    VisualizationPanel* visualizationPanel_;
+    ParameterPanel* parameterPanel_;
     QLabel* unitSystemIndicator_;
-    QWidget* viewControlsContainer_;
 
     QMenu* fileMenu_;
     QAction* newProjectAction_;
@@ -71,20 +55,6 @@ private:
     QAction* exitAction_;
 
     WorkflowController* workflowController_;
-    WorkflowTabBar* workflowTabBar_;
-    QStackedWidget* stageStackedWidget_;
-
-    ProjectSetupWidget* projectSetupWidget_;
-    GeometryDefinitionWidget* geometryDefinitionWidget_;
-    HydraulicParametersWidget* hydraulicParametersWidget_;
-    AnalysisResultsWidget* analysisResultsWidget_;
-    ExportWidget* exportWidget_;
-
-    QPushButton* viewTopButton_;
-    QPushButton* viewFrontButton_;
-    QPushButton* viewRightButton_;
-    QPushButton* viewIsoButton_;
-    QPushButton* viewResetButton_;
 };
 
 #endif // MAINWINDOW_H

@@ -9,7 +9,7 @@
 #include <vtkOrientationMarkerWidget.h>
 #include <vtkAxesActor.h>
 #include <vtkAnnotatedCubeActor.h>
-#include "../ui/ProjectDataStructures.h"
+#include "ProjectDataStructures.h"
 #include "../backend/HydraulicCalculator.h"
 #include <vtkRenderWindowInteractor.h>
 

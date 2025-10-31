@@ -1,14 +1,13 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include <QVBoxLayout>
-#include <QHBoxLayout>
 #include <QSizePolicy>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , mainSplitter_{nullptr}
-    , visualizationArea_{nullptr}
+    , visualizationPanel_{nullptr}
     , parameterPanel_{nullptr}
     , unitSystemIndicator_{nullptr}
     , fileMenu_{nullptr}
@@ -18,21 +17,6 @@ MainWindow::MainWindow(QWidget *parent)
     , saveAsAction_{nullptr}
     , exitAction_{nullptr}
     , workflowController_{nullptr}
-    , workflowTabBar_{nullptr}
-    , stageStackedWidget_{nullptr}
-    , projectSetupWidget_{nullptr}
-    , geometryDefinitionWidget_{nullptr}
-    , hydraulicParametersWidget_{nullptr}
-    , analysisResultsWidget_{nullptr}
-    , exportWidget_{nullptr}
-    , vtkWidget_{nullptr}
-    , visualizationRendered_{false}
-    , viewTopButton_{nullptr}
-    , viewFrontButton_{nullptr}
-    , viewRightButton_{nullptr}
-    , viewIsoButton_{nullptr}
-    , viewResetButton_{nullptr}
-    , viewControlsContainer_{nullptr}
 {
     ui->setupUi(this);
 
@@ -40,16 +24,18 @@ MainWindow::MainWindow(QWidget *parent)
 
     setup_ui();
 
-    connect(projectSetupWidget_, &ProjectSetupWidget::data_changed,
+    connect(parameterPanel_->get_project_setup_widget(), &ProjectSetupWidget::data_changed,
             this, &MainWindow::on_project_setup_data_changed);
-    connect(geometryDefinitionWidget_, &GeometryDefinitionWidget::data_changed,
+    connect(parameterPanel_->get_geometry_definition_widget(), &GeometryDefinitionWidget::data_changed,
             this, &MainWindow::on_geometry_data_changed);
-    connect(hydraulicParametersWidget_, &HydraulicParametersWidget::data_changed,
+    connect(parameterPanel_->get_hydraulic_parameters_widget(), &HydraulicParametersWidget::data_changed,
             this, &MainWindow::on_hydraulic_parameters_data_changed);
     connect(workflowController_, &WorkflowController::current_stage_changed,
             this, &MainWindow::on_current_stage_changed);
     connect(workflowController_, &WorkflowController::calculation_completed,
             this, &MainWindow::on_calculation_completed);
+    connect(parameterPanel_, &ParameterPanel::tab_clicked,
+            this, &MainWindow::on_tab_clicked);
 
     workflowController_->set_current_stage(WorkflowStage::ProjectSetup);
 }
@@ -63,7 +49,6 @@ void MainWindow::setup_ui()
 {
     setup_menu_bar();
     setup_layout();
-    setup_view_controls();
     apply_dark_theme();
 
     setWindowTitle("Hydraulic Toolbox");
@@ -114,48 +99,10 @@ void MainWindow::setup_layout()
 
     mainSplitter_ = new QSplitter(Qt::Vertical, centralWidget);
 
-    visualizationArea_ = new QWidget();
-    visualizationArea_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    visualizationArea_->setMinimumHeight(400);
+    visualizationPanel_ = new VisualizationPanel();
+    parameterPanel_ = new ParameterPanel(workflowController_);
 
-    QVBoxLayout* visualizationLayout = new QVBoxLayout(visualizationArea_);
-    visualizationLayout->setContentsMargins(0, 0, 0, 0);
-    visualizationLayout->setSpacing(0);
-
-    vtkWidget_ = new VtkWidget();
-    visualizationLayout->addWidget(vtkWidget_);
-
-    parameterPanel_ = new QWidget();
-    parameterPanel_->setStyleSheet("QWidget { background-color: #3c3c3c; }");
-    parameterPanel_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
-
-    QVBoxLayout* parameterLayout = new QVBoxLayout(parameterPanel_);
-    parameterLayout->setContentsMargins(0, 0, 0, 0);
-    parameterLayout->setSpacing(0);
-
-    stageStackedWidget_ = new QStackedWidget(parameterPanel_);
-
-    projectSetupWidget_ = new ProjectSetupWidget();
-    geometryDefinitionWidget_ = new GeometryDefinitionWidget();
-    hydraulicParametersWidget_ = new HydraulicParametersWidget();
-    analysisResultsWidget_ = new AnalysisResultsWidget();
-    exportWidget_ = new ExportWidget();
-
-    stageStackedWidget_->addWidget(projectSetupWidget_);
-    stageStackedWidget_->addWidget(geometryDefinitionWidget_);
-    stageStackedWidget_->addWidget(hydraulicParametersWidget_);
-    stageStackedWidget_->addWidget(analysisResultsWidget_);
-    stageStackedWidget_->addWidget(exportWidget_);
-
-    parameterLayout->addWidget(stageStackedWidget_);
-
-    workflowTabBar_ = new WorkflowTabBar(workflowController_, parameterPanel_);
-    parameterLayout->addWidget(workflowTabBar_);
-
-    connect(workflowTabBar_, &WorkflowTabBar::tab_clicked,
-            this, &MainWindow::on_tab_clicked);
-
-    mainSplitter_->addWidget(visualizationArea_);
+    mainSplitter_->addWidget(visualizationPanel_);
     mainSplitter_->addWidget(parameterPanel_);
 
     mainSplitter_->setStretchFactor(0, 3);
@@ -187,14 +134,7 @@ void MainWindow::on_tab_clicked(WorkflowStage stage)
 
 void MainWindow::on_current_stage_changed(WorkflowStage newStage)
 {
-    int index = static_cast<int>(newStage);
-
-    if(index < stageStackedWidget_->count())
-    {
-        stageStackedWidget_->setCurrentIndex(index);
-    }
-
-    adjust_parameter_panel_height(newStage);
+    parameterPanel_->set_current_stage(newStage);
 
     if(newStage == WorkflowStage::AnalysisResults)
     {
@@ -207,11 +147,12 @@ void MainWindow::on_project_setup_data_changed()
 {
     ProjectData& data = workflowController_->get_project_data();
 
-    data.projectName = projectSetupWidget_->get_project_name();
-    data.location = projectSetupWidget_->get_location();
-    data.useUsCustomary = projectSetupWidget_->is_us_customary();
+    ProjectSetupWidget* widget = parameterPanel_->get_project_setup_widget();
+    data.projectName = widget->get_project_name();
+    data.location = widget->get_location();
+    data.useUsCustomary = widget->is_us_customary();
 
-    bool isComplete = projectSetupWidget_->is_complete();
+    bool isComplete = widget->is_complete();
     workflowController_->mark_stage_complete(WorkflowStage::ProjectSetup, isComplete);
 
     update_unit_system_indicator();
@@ -221,12 +162,13 @@ void MainWindow::on_geometry_data_changed()
 {
     GeometryData& data = workflowController_->get_geometry_data();
 
-    data.channelType = geometryDefinitionWidget_->get_channel_type();
-    data.bottomWidth = geometryDefinitionWidget_->get_bottom_width();
-    data.sideSlope = geometryDefinitionWidget_->get_side_slope();
-    data.bedSlope = geometryDefinitionWidget_->get_bed_slope();
+    GeometryDefinitionWidget* widget = parameterPanel_->get_geometry_definition_widget();
+    data.channelType = widget->get_channel_type();
+    data.bottomWidth = widget->get_bottom_width();
+    data.sideSlope = widget->get_side_slope();
+    data.bedSlope = widget->get_bed_slope();
 
-    bool isComplete = geometryDefinitionWidget_->is_complete();
+    bool isComplete = widget->is_complete();
     workflowController_->mark_stage_complete(WorkflowStage::GeometryDefinition, isComplete);
 }
 
@@ -234,10 +176,11 @@ void MainWindow::on_hydraulic_parameters_data_changed()
 {
     HydraulicData& data = workflowController_->get_hydraulic_data();
 
-    data.discharge = hydraulicParametersWidget_->get_discharge();
-    data.manningN = hydraulicParametersWidget_->get_mannings_n();
+    HydraulicParametersWidget* widget = parameterPanel_->get_hydraulic_parameters_widget();
+    data.discharge = widget->get_discharge();
+    data.manningN = widget->get_mannings_n();
 
-    bool isComplete = hydraulicParametersWidget_->is_complete();
+    bool isComplete = widget->is_complete();
     workflowController_->mark_stage_complete(WorkflowStage::HydraulicParameters, isComplete);
 }
 
@@ -254,127 +197,11 @@ void MainWindow::update_unit_system_indicator()
 void MainWindow::on_calculation_completed(const CalculationResults& results)
 {
     ProjectData& projectData = workflowController_->get_project_data();
-    analysisResultsWidget_->update_results(results, projectData.useUsCustomary);
+    parameterPanel_->get_analysis_results_widget()->update_results(results, projectData.useUsCustomary);
 
     if(results.isValid)
     {
         GeometryData& geometryData = workflowController_->get_geometry_data();
-        vtkWidget_->render_channel(geometryData, results);
-        visualizationRendered_ = true;
+        visualizationPanel_->render_channel(geometryData, results);
     }
-}
-
-void MainWindow::setup_view_controls()
-{
-    // Create container parented to visualizationArea_ but NOT added to its layout
-    viewControlsContainer_ = new QWidget(visualizationArea_);
-    viewControlsContainer_->setStyleSheet("QWidget { background-color: rgba(60, 60, 60, 200); border-radius: 5px; }");
-
-    QHBoxLayout* controlsLayout = new QHBoxLayout(viewControlsContainer_);
-    controlsLayout->setContentsMargins(6, 6, 6, 6);
-    controlsLayout->setSpacing(4);
-
-    QString buttonStyle =
-        "QPushButton { "
-        "  background-color: #4a4a4a; "
-        "  color: #ffffff; "
-        "  border: 1px solid #5a5a5a; "
-        "  border-radius: 3px; "
-        "  padding: 5px 10px; "
-        "  font-size: 10px; "
-        "}"
-        "QPushButton:hover { "
-        "  background-color: #5a5a5a; "
-        "  border: 1px solid #0078d4; "
-        "}"
-        "QPushButton:pressed { "
-        "  background-color: #3a3a3a; "
-        "}";
-
-    viewIsoButton_ = new QPushButton("Isometric", viewControlsContainer_);
-    viewIsoButton_->setStyleSheet(buttonStyle);
-    viewIsoButton_->setToolTip("Isometric view");
-    controlsLayout->addWidget(viewIsoButton_);
-
-    viewTopButton_ = new QPushButton("Top", viewControlsContainer_);
-    viewTopButton_->setStyleSheet(buttonStyle);
-    viewTopButton_->setToolTip("View from top");
-    controlsLayout->addWidget(viewTopButton_);
-
-    viewFrontButton_ = new QPushButton("Front", viewControlsContainer_);
-    viewFrontButton_->setStyleSheet(buttonStyle);
-    viewFrontButton_->setToolTip("View from front");
-    controlsLayout->addWidget(viewFrontButton_);
-
-    viewRightButton_ = new QPushButton("Right", viewControlsContainer_);
-    viewRightButton_->setStyleSheet(buttonStyle);
-    viewRightButton_->setToolTip("View from right");
-    controlsLayout->addWidget(viewRightButton_);
-
-    viewResetButton_ = new QPushButton("Reset", viewControlsContainer_);
-    viewResetButton_->setStyleSheet(buttonStyle);
-    viewResetButton_->setToolTip("Reset to default view");
-    controlsLayout->addWidget(viewResetButton_);
-
-    // Size the container based on its content
-    viewControlsContainer_->setFixedSize(310, 35);
-
-    // Position will be set in resizeEvent
-    viewControlsContainer_->raise();
-    viewControlsContainer_->show();
-
-    connect(viewIsoButton_, &QPushButton::clicked, vtkWidget_, &VtkWidget::set_view_isometric);
-    connect(viewTopButton_, &QPushButton::clicked, vtkWidget_, &VtkWidget::set_view_top);
-    connect(viewFrontButton_, &QPushButton::clicked, vtkWidget_, &VtkWidget::set_view_front);
-    connect(viewRightButton_, &QPushButton::clicked, vtkWidget_, &VtkWidget::set_view_right);
-    connect(viewResetButton_, &QPushButton::clicked, vtkWidget_, &VtkWidget::reset_view);
-}
-
-void MainWindow::resizeEvent(QResizeEvent* event)
-{
-    QMainWindow::resizeEvent(event);
-
-    if (viewControlsContainer_ && visualizationArea_)
-    {
-        int x = width() - viewControlsContainer_->width() - 20;
-        int y = 30;  // Below menu bar
-
-        viewControlsContainer_->move(x, y);
-        viewControlsContainer_->raise();
-    }
-}
-
-
-void MainWindow::adjust_parameter_panel_height(WorkflowStage stage)
-{
-    int preferredHeight = 200;
-
-    switch(stage)
-    {
-    case WorkflowStage::ProjectSetup:
-        preferredHeight = 270;
-        break;
-    case WorkflowStage::GeometryDefinition:
-        preferredHeight = 320;
-        break;
-    case WorkflowStage::HydraulicParameters:
-        preferredHeight = 380;
-        break;
-    case WorkflowStage::AnalysisResults:
-        preferredHeight = 250;
-        break;
-    case WorkflowStage::Export:
-        preferredHeight = 400;
-        break;
-    }
-
-    parameterPanel_->setMinimumHeight(preferredHeight);
-    parameterPanel_->setMaximumHeight(preferredHeight);
-
-    int totalHeight = mainSplitter_->height();
-    int visualizationHeight = totalHeight - preferredHeight;
-
-    QList<int> sizes;
-    sizes << visualizationHeight << preferredHeight;
-    mainSplitter_->setSizes(sizes);
 }
