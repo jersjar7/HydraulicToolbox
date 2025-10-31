@@ -50,6 +50,7 @@ private:
     void setup_view_controls();
     void apply_dark_theme();
     void update_unit_system_indicator();
+    void adjust_parameter_panel_height(WorkflowStage stage);
 
     bool visualizationRendered_;
 

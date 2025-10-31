@@ -116,7 +116,7 @@ void MainWindow::setup_layout()
 
     visualizationArea_ = new QWidget();
     visualizationArea_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    visualizationArea_->setMinimumHeight(600);
+    visualizationArea_->setMinimumHeight(400);
 
     QVBoxLayout* visualizationLayout = new QVBoxLayout(visualizationArea_);
     visualizationLayout->setContentsMargins(0, 0, 0, 0);
@@ -158,8 +158,12 @@ void MainWindow::setup_layout()
     mainSplitter_->addWidget(visualizationArea_);
     mainSplitter_->addWidget(parameterPanel_);
 
-    mainSplitter_->setStretchFactor(0, 2);
+    mainSplitter_->setStretchFactor(0, 3);
     mainSplitter_->setStretchFactor(1, 1);
+
+    QList<int> sizes;
+    sizes << 600 << 200;
+    mainSplitter_->setSizes(sizes);
 
     mainLayout->addWidget(mainSplitter_);
 }
@@ -189,6 +193,8 @@ void MainWindow::on_current_stage_changed(WorkflowStage newStage)
     {
         stageStackedWidget_->setCurrentIndex(index);
     }
+
+    adjust_parameter_panel_height(newStage);
 
     if(newStage == WorkflowStage::AnalysisResults)
     {
@@ -285,6 +291,11 @@ void MainWindow::setup_view_controls()
         "  background-color: #3a3a3a; "
         "}";
 
+    viewIsoButton_ = new QPushButton("Isometric", viewControlsContainer_);
+    viewIsoButton_->setStyleSheet(buttonStyle);
+    viewIsoButton_->setToolTip("Isometric view");
+    controlsLayout->addWidget(viewIsoButton_);
+
     viewTopButton_ = new QPushButton("Top", viewControlsContainer_);
     viewTopButton_->setStyleSheet(buttonStyle);
     viewTopButton_->setToolTip("View from top");
@@ -300,11 +311,6 @@ void MainWindow::setup_view_controls()
     viewRightButton_->setToolTip("View from right");
     controlsLayout->addWidget(viewRightButton_);
 
-    viewIsoButton_ = new QPushButton("Iso", viewControlsContainer_);
-    viewIsoButton_->setStyleSheet(buttonStyle);
-    viewIsoButton_->setToolTip("Isometric view");
-    controlsLayout->addWidget(viewIsoButton_);
-
     viewResetButton_ = new QPushButton("Reset", viewControlsContainer_);
     viewResetButton_->setStyleSheet(buttonStyle);
     viewResetButton_->setToolTip("Reset to default view");
@@ -317,10 +323,10 @@ void MainWindow::setup_view_controls()
     viewControlsContainer_->raise();
     viewControlsContainer_->show();
 
+    connect(viewIsoButton_, &QPushButton::clicked, vtkWidget_, &VtkWidget::set_view_isometric);
     connect(viewTopButton_, &QPushButton::clicked, vtkWidget_, &VtkWidget::set_view_top);
     connect(viewFrontButton_, &QPushButton::clicked, vtkWidget_, &VtkWidget::set_view_front);
     connect(viewRightButton_, &QPushButton::clicked, vtkWidget_, &VtkWidget::set_view_right);
-    connect(viewIsoButton_, &QPushButton::clicked, vtkWidget_, &VtkWidget::set_view_isometric);
     connect(viewResetButton_, &QPushButton::clicked, vtkWidget_, &VtkWidget::reset_view);
 }
 
@@ -330,11 +336,45 @@ void MainWindow::resizeEvent(QResizeEvent* event)
 
     if (viewControlsContainer_ && visualizationArea_)
     {
-        // Use the actual widget width to position from the right edge
-        int x = width() - viewControlsContainer_->width() - 20;  // 20px from right edge of window
+        int x = width() - viewControlsContainer_->width() - 20;
         int y = 30;  // Below menu bar
 
         viewControlsContainer_->move(x, y);
         viewControlsContainer_->raise();
     }
+}
+
+
+void MainWindow::adjust_parameter_panel_height(WorkflowStage stage)
+{
+    int preferredHeight = 200;
+
+    switch(stage)
+    {
+    case WorkflowStage::ProjectSetup:
+        preferredHeight = 270;
+        break;
+    case WorkflowStage::GeometryDefinition:
+        preferredHeight = 320;
+        break;
+    case WorkflowStage::HydraulicParameters:
+        preferredHeight = 380;
+        break;
+    case WorkflowStage::AnalysisResults:
+        preferredHeight = 250;
+        break;
+    case WorkflowStage::Export:
+        preferredHeight = 400;
+        break;
+    }
+
+    parameterPanel_->setMinimumHeight(preferredHeight);
+    parameterPanel_->setMaximumHeight(preferredHeight);
+
+    int totalHeight = mainSplitter_->height();
+    int visualizationHeight = totalHeight - preferredHeight;
+
+    QList<int> sizes;
+    sizes << visualizationHeight << preferredHeight;
+    mainSplitter_->setSizes(sizes);
 }
