@@ -1,8 +1,10 @@
 #include "VisualizationPanel.h"
 
-VisualizationPanel::VisualizationPanel(QWidget* parent)
+VisualizationPanel::VisualizationPanel(WorkflowController* controller, QWidget* parent)
     : QWidget(parent)
+    , controller_{controller}
     , vtkWidget_{nullptr}
+    , inputSummaryWidget_{nullptr}
     , viewControlsContainer_{nullptr}
     , viewTopButton_{nullptr}
     , viewFrontButton_{nullptr}
@@ -27,6 +29,12 @@ void VisualizationPanel::setup_ui()
 
     vtkWidget_ = new VtkWidget(this);
     mainLayout->addWidget(vtkWidget_);
+
+    inputSummaryWidget_ = new InputSummaryWidget(controller_, this);
+    inputSummaryWidget_->raise();
+
+    connect(inputSummaryWidget_, &InputSummaryWidget::minimized_state_changed,
+            this, &VisualizationPanel::on_input_summary_minimized);
 
     setMinimumHeight(400);
 }
@@ -115,10 +123,34 @@ void VisualizationPanel::position_view_controls()
     }
 }
 
+void VisualizationPanel::position_input_summary()
+{
+    if(inputSummaryWidget_)
+    {
+        inputSummaryWidget_->setGeometry(0, 0,
+                                         inputSummaryWidget_->width(),
+                                         height());
+        inputSummaryWidget_->raise();
+    }
+}
+
+void VisualizationPanel::on_input_summary_minimized(bool minimized)
+{
+    // Optional: Could adjust view controls position based on summary state
+    position_view_controls();
+}
+
 void VisualizationPanel::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
     position_view_controls();
+    position_input_summary();
+
+    // Check for auto-minimize
+    if(inputSummaryWidget_)
+    {
+        inputSummaryWidget_->check_auto_minimize(width());
+    }
 }
 
 void VisualizationPanel::render_channel(const GeometryData& geometry, const CalculationResults& results)
@@ -132,4 +164,9 @@ void VisualizationPanel::render_channel(const GeometryData& geometry, const Calc
 VtkWidget* VisualizationPanel::get_vtk_widget()
 {
     return vtkWidget_;
+}
+
+InputSummaryWidget* VisualizationPanel::get_input_summary_widget()
+{
+    return inputSummaryWidget_;
 }

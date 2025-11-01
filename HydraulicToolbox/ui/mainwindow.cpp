@@ -42,6 +42,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(parameterPanel_->get_project_setup_widget(), &ProjectSetupWidget::unit_system_changed_with_data_clear,
             this, &MainWindow::on_unit_system_changed_with_data_clear);
 
+    connect_input_summary_updates();
+
     workflowController_->set_current_stage(WorkflowStage::ProjectSetup);
 }
 
@@ -104,7 +106,7 @@ void MainWindow::setup_layout()
 
     mainSplitter_ = new QSplitter(Qt::Vertical, centralWidget);
 
-    visualizationPanel_ = new VisualizationPanel();
+    visualizationPanel_ = new VisualizationPanel(workflowController_);
     parameterPanel_ = new ParameterPanel(workflowController_);
 
     mainSplitter_->addWidget(visualizationPanel_);
@@ -132,6 +134,46 @@ void MainWindow::apply_dark_theme()
         );
 }
 
+void MainWindow::connect_input_summary_updates()
+{
+    InputSummaryWidget* summaryWidget = visualizationPanel_->get_input_summary_widget();
+
+    if(!summaryWidget)
+        return;
+
+    // Connect to project setup widget field focus changes
+    auto projectWidget = parameterPanel_->get_project_setup_widget();
+    connect(projectWidget, &ProjectSetupWidget::data_changed,
+            this, &MainWindow::update_input_summary);
+
+    // Connect to geometry definition widget field focus changes
+    auto geometryWidget = parameterPanel_->get_geometry_definition_widget();
+    connect(geometryWidget, &GeometryDefinitionWidget::data_changed,
+            this, &MainWindow::update_input_summary);
+
+    // Connect to hydraulic parameters widget field focus changes
+    auto hydraulicWidget = parameterPanel_->get_hydraulic_parameters_widget();
+    connect(hydraulicWidget, &HydraulicParametersWidget::data_changed,
+            this, &MainWindow::update_input_summary);
+
+    // Connect to stage changes to update summary
+    connect(workflowController_, &WorkflowController::current_stage_changed,
+            this, &MainWindow::update_input_summary);
+}
+
+void MainWindow::update_input_summary()
+{
+    InputSummaryWidget* summaryWidget = visualizationPanel_->get_input_summary_widget();
+
+    if(!summaryWidget)
+        return;
+
+    // Update all sections with current data
+    summaryWidget->update_project_data(workflowController_->get_project_data());
+    summaryWidget->update_geometry_data(workflowController_->get_geometry_data());
+    summaryWidget->update_hydraulic_data(workflowController_->get_hydraulic_data());
+}
+
 void MainWindow::on_tab_clicked(WorkflowStage stage)
 {
     workflowController_->set_current_stage(stage);
@@ -146,6 +188,9 @@ void MainWindow::on_current_stage_changed(WorkflowStage newStage)
         workflowController_->perform_calculation();
         workflowController_->mark_stage_complete(WorkflowStage::AnalysisResults, true);
     }
+
+    // Update summary when stage changes
+    update_input_summary();
 }
 
 void MainWindow::on_project_setup_data_changed()
@@ -230,4 +275,7 @@ void MainWindow::on_unit_system_changed_with_data_clear()
 
     parameterPanel_->get_hydraulic_parameters_widget()->update_placeholders(
         workflowController_->get_project_data().useUsCustomary);
+
+    // Clear and update input summary
+    update_input_summary();
 }

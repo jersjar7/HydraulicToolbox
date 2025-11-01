@@ -33,6 +33,7 @@ private slots:
     void on_current_stage_changed(WorkflowStage newStage);
     void on_calculation_completed(const CalculationResults& results);
     void on_unit_system_changed_with_data_clear();
+    void update_input_summary();
 
 private:
     void setup_ui();
@@ -40,6 +41,7 @@ private:
     void setup_layout();
     void apply_dark_theme();
     void update_unit_system_indicator();
+    void connect_input_summary_updates();
 
     Ui::MainWindow* ui;
 

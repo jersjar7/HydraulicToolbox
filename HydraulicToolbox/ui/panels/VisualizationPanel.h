@@ -7,18 +7,21 @@
 #include <QHBoxLayout>
 #include <QResizeEvent>
 #include "VtkWidget.h"
+#include "InputSummaryWidget.h"
 #include "ProjectDataStructures.h"
+#include "WorkflowController.h"
 
 class VisualizationPanel : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit VisualizationPanel(QWidget* parent = nullptr);
+    explicit VisualizationPanel(WorkflowController* controller, QWidget* parent = nullptr);
     ~VisualizationPanel();
 
     void render_channel(const GeometryData& geometry, const CalculationResults& results);
     VtkWidget* get_vtk_widget();
+    InputSummaryWidget* get_input_summary_widget();
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
@@ -28,8 +31,13 @@ private:
     void setup_view_controls();
     void apply_styling();
     void position_view_controls();
+    void position_input_summary();
+    void on_input_summary_minimized(bool minimized);
+
+    WorkflowController* controller_;
 
     VtkWidget* vtkWidget_;
+    InputSummaryWidget* inputSummaryWidget_;
     QWidget* viewControlsContainer_;
 
     QPushButton* viewTopButton_;

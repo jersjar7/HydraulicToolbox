@@ -75,7 +75,7 @@ set(UI_CONTROLS_SOURCES
     ui/controls/WorkflowTabBar.cpp
 )
 
-# Widgets subfolder (all 5 tab widgets)
+# Widgets subfolder (all 5 tab widgets + InputSummaryWidget)
 set(UI_WIDGETS_SOURCES
     ui/widgets/ProjectSetupWidget.h
     ui/widgets/ProjectSetupWidget.cpp
@@ -87,6 +87,8 @@ set(UI_WIDGETS_SOURCES
     ui/widgets/AnalysisResultsWidget.cpp
     ui/widgets/ExportWidget.h
     ui/widgets/ExportWidget.cpp
+    ui/widgets/InputSummaryWidget.h
+    ui/widgets/InputSummaryWidget.cpp
 )
 
 # Panels subfolder
