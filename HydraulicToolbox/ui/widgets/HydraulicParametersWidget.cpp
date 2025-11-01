@@ -1,4 +1,5 @@
 #include "HydraulicParametersWidget.h"
+#include "UnitSystemConstants.h"
 #include <QVBoxLayout>
 #include <QGroupBox>
 #include <QLabel>
@@ -41,6 +42,21 @@ bool HydraulicParametersWidget::is_complete() const
     return !dischargeEdit_->text().isEmpty() && !manningsNEdit_->text().isEmpty();
 }
 
+void HydraulicParametersWidget::clear_fields()
+{
+    dischargeEdit_->clear();
+    manningsMaterialCombo_->setCurrentIndex(0);
+    manningsNEdit_->clear();
+}
+
+void HydraulicParametersWidget::update_placeholders(bool useUsCustomary)
+{
+    QString dischargePlaceholder = QString("Enter discharge (%1)")
+    .arg(useUsCustomary ? UnitSystemConstants::LABEL_DISCHARGE_US : UnitSystemConstants::LABEL_DISCHARGE_SI);
+
+    dischargeEdit_->setPlaceholderText(dischargePlaceholder);
+}
+
 void HydraulicParametersWidget::setup_ui()
 {
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
@@ -53,7 +69,7 @@ void HydraulicParametersWidget::setup_ui()
     formLayout_->setLabelAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
     dischargeEdit_ = new QLineEdit();
-    dischargeEdit_->setPlaceholderText("Enter discharge (cfs or m³/s)");
+    dischargeEdit_->setPlaceholderText("Enter discharge");
     dischargeEdit_->setMinimumWidth(300);
     formLayout_->addRow("Discharge (Q):", dischargeEdit_);
 

@@ -84,3 +84,51 @@ CalculationResults WorkflowController::get_calculation_results() const
 {
     return calculationResults_;
 }
+
+bool WorkflowController::has_any_data_entered() const
+{
+    // Check if geometry data has been entered
+    if(!geometryData_.channelType.isEmpty() ||
+        geometryData_.bottomWidth != 0.0 ||
+        geometryData_.sideSlope != 0.0 ||
+        geometryData_.bedSlope != 0.0)
+    {
+        return true;
+    }
+
+    // Check if hydraulic data has been entered
+    if(hydraulicData_.discharge != 0.0 ||
+        hydraulicData_.manningN != 0.0)
+    {
+        return true;
+    }
+
+    return false;
+}
+
+void WorkflowController::clear_all_data()
+{
+    // Clear geometry data
+    geometryData_ = GeometryData{};
+
+    // Clear hydraulic data
+    hydraulicData_ = HydraulicData{};
+
+    // Clear calculation results
+    calculationResults_ = CalculationResults{};
+
+    // Mark stages as incomplete (except project setup)
+    stageComplete_[1] = false;  // Geometry
+    stageComplete_[2] = false;  // Hydraulic
+    stageComplete_[3] = false;  // Analysis
+    stageComplete_[4] = false;  // Export
+
+    // Emit signals to update UI
+    for(int i = 1; i < 5; ++i)
+    {
+        emit stage_completion_changed(static_cast<WorkflowStage>(i), false);
+    }
+
+    // Return to geometry definition stage
+    set_current_stage(WorkflowStage::GeometryDefinition);
+}

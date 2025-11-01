@@ -18,6 +18,9 @@ public:
     double get_mannings_n() const;
     bool is_complete() const;
 
+    void clear_fields();
+    void update_placeholders(bool useUsCustomary);
+
 signals:
     void data_changed();
 

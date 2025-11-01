@@ -37,6 +37,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(parameterPanel_, &ParameterPanel::tab_clicked,
             this, &MainWindow::on_tab_clicked);
 
+    parameterPanel_->get_project_setup_widget()->set_workflow_controller(workflowController_);
+
+    connect(parameterPanel_->get_project_setup_widget(), &ProjectSetupWidget::unit_system_changed_with_data_clear,
+            this, &MainWindow::on_unit_system_changed_with_data_clear);
+
     workflowController_->set_current_stage(WorkflowStage::ProjectSetup);
 }
 
@@ -156,6 +161,8 @@ void MainWindow::on_project_setup_data_changed()
     workflowController_->mark_stage_complete(WorkflowStage::ProjectSetup, isComplete);
 
     update_unit_system_indicator();
+
+    parameterPanel_->get_hydraulic_parameters_widget()->update_placeholders(data.useUsCustomary);
 }
 
 void MainWindow::on_geometry_data_changed()
@@ -204,4 +211,23 @@ void MainWindow::on_calculation_completed(const CalculationResults& results)
         GeometryData& geometryData = workflowController_->get_geometry_data();
         visualizationPanel_->render_channel(geometryData, results);
     }
+}
+
+void MainWindow::on_unit_system_changed_with_data_clear()
+{
+    workflowController_->clear_all_data();
+
+    parameterPanel_->get_geometry_definition_widget()->clear_fields();
+    parameterPanel_->get_hydraulic_parameters_widget()->clear_fields();
+
+    CalculationResults emptyResults;
+    emptyResults.isValid = false;
+    parameterPanel_->get_analysis_results_widget()->update_results(
+        emptyResults,
+        workflowController_->get_project_data().useUsCustomary);
+
+    update_unit_system_indicator();
+
+    parameterPanel_->get_hydraulic_parameters_widget()->update_placeholders(
+        workflowController_->get_project_data().useUsCustomary);
 }

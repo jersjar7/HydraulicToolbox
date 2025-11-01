@@ -1,9 +1,11 @@
 #include "ProjectSetupWidget.h"
+#include "WorkflowController.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFormLayout>
 #include <QLabel>
 #include <QGroupBox>
+#include <QMessageBox>
 
 ProjectSetupWidget::ProjectSetupWidget(QWidget* parent)
     : QWidget(parent)
@@ -12,13 +14,15 @@ ProjectSetupWidget::ProjectSetupWidget(QWidget* parent)
     , usCustomaryRadio_{nullptr}
     , siMetricRadio_{nullptr}
     , unitSystemGroup_{nullptr}
+    , workflowController_{nullptr}
+    , suppressUnitChangeWarning_{false}
 {
     setup_ui();
     apply_styling();
 
     connect(projectNameEdit_, &QLineEdit::textChanged, this, &ProjectSetupWidget::data_changed);
     connect(locationEdit_, &QLineEdit::textChanged, this, &ProjectSetupWidget::data_changed);
-    connect(unitSystemGroup_, &QButtonGroup::buttonClicked, this, &ProjectSetupWidget::data_changed);
+    connect(unitSystemGroup_, &QButtonGroup::buttonClicked, this, &ProjectSetupWidget::on_unit_system_changed);
 }
 
 ProjectSetupWidget::~ProjectSetupWidget()
@@ -43,6 +47,65 @@ bool ProjectSetupWidget::is_us_customary() const
 bool ProjectSetupWidget::is_complete() const
 {
     return !projectNameEdit_->text().isEmpty();
+}
+
+void ProjectSetupWidget::set_workflow_controller(WorkflowController* controller)
+{
+    workflowController_ = controller;
+}
+
+void ProjectSetupWidget::on_unit_system_changed()
+{
+    if(suppressUnitChangeWarning_)
+    {
+        emit data_changed();
+        return;
+    }
+
+    // Check if there's data in downstream stages
+    if(has_downstream_data())
+    {
+        QMessageBox msgBox(this);
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setWindowTitle("Change Unit System");
+        msgBox.setText("Changing the unit system will clear all entered data.");
+        msgBox.setInformativeText("All geometry, hydraulic parameters, and results will be erased. Do you want to continue?");
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        msgBox.setDefaultButton(QMessageBox::No);
+
+        int response = msgBox.exec();
+
+        if(response == QMessageBox::Yes)
+        {
+            // User confirmed - emit signal to clear data
+            emit unit_system_changed_with_data_clear();
+            emit data_changed();
+        }
+        else
+        {
+            // User cancelled - revert unit system selection
+            suppressUnitChangeWarning_ = true;
+            bool shouldBeUsCustomary = !is_us_customary();
+            if(shouldBeUsCustomary)
+                usCustomaryRadio_->setChecked(true);
+            else
+                siMetricRadio_->setChecked(true);
+            suppressUnitChangeWarning_ = false;
+        }
+    }
+    else
+    {
+        // No downstream data, just emit change
+        emit data_changed();
+    }
+}
+
+bool ProjectSetupWidget::has_downstream_data() const
+{
+    if(!workflowController_)
+        return false;
+
+    return workflowController_->has_any_data_entered();
 }
 
 void ProjectSetupWidget::setup_ui()

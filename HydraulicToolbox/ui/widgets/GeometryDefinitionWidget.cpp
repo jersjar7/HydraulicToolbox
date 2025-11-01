@@ -70,6 +70,14 @@ bool GeometryDefinitionWidget::is_complete() const
     return false;
 }
 
+void GeometryDefinitionWidget::clear_fields()
+{
+    channelTypeCombo_->setCurrentIndex(0);
+    bottomWidthEdit_->clear();
+    sideSlopeEdit_->clear();
+    bedSlopeEdit_->clear();
+}
+
 void GeometryDefinitionWidget::setup_ui()
 {
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
@@ -133,7 +141,7 @@ void GeometryDefinitionWidget::setup_ui()
     formLayout_->addRow(sideSlopeLabel_, sideSlopeEdit_);
 
     bedSlopeEdit_ = new QLineEdit();
-    bedSlopeEdit_->setPlaceholderText("Enter bed slope (m/m or ft/ft)");
+    bedSlopeEdit_->setPlaceholderText("Enter bed slope");
     bedSlopeEdit_->setMinimumWidth(300);
     formLayout_->addRow("Bed Slope:", bedSlopeEdit_);
 

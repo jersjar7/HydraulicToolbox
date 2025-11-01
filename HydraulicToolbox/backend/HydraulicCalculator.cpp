@@ -1,8 +1,8 @@
-
 #include "HydraulicCalculator.h"
 #include "RectangularChannel.h"
 #include "TrapezoidalChannel.h"
 #include "TriangularChannel.h"
+#include "UnitSystemConstants.h"
 
 HydraulicCalculator::HydraulicCalculator()
 {
@@ -37,9 +37,12 @@ CalculationResults HydraulicCalculator::calculate(const ProjectData& projectData
 
         Flow flow = create_flow(hydraulicData);
 
+        // Get correct constants based on unit system
+        double manningsCoefficient = UnitSystemConstants::get_mannings_coefficient(projectData.useUsCustomary);
+        double gravity = UnitSystemConstants::get_gravity(projectData.useUsCustomary);
+
         Analyzer analyzer;
-        double coefficient = projectData.useUsCustomary ? 1.49 : 1.0;
-        AnalysisResult backendResult = analyzer.solve_for_depth(*channel, flow, geometryData.bedSlope, coefficient);
+        AnalysisResult backendResult = analyzer.solve_for_depth(*channel, flow, geometryData.bedSlope, manningsCoefficient, gravity);
 
         results.normalDepth = backendResult.normalDepth;
         results.velocity = backendResult.velocity;

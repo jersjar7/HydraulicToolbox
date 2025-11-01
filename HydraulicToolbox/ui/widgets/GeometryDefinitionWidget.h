@@ -22,6 +22,8 @@ public:
     double get_bed_slope() const;
     bool is_complete() const;
 
+    void clear_fields();
+
 signals:
     void data_changed();
 

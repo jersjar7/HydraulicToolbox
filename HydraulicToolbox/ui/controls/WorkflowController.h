@@ -37,6 +37,10 @@ public:
     void perform_calculation();
     CalculationResults get_calculation_results() const;
 
+    // New methods for unit system change handling
+    bool has_any_data_entered() const;
+    void clear_all_data();
+
 signals:
     void current_stage_changed(WorkflowStage newStage);
     void stage_completion_changed(WorkflowStage stage, bool complete);
