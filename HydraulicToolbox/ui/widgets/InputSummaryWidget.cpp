@@ -4,6 +4,7 @@
 #include <QFormLayout>
 #include <QResizeEvent>
 #include <QTimer>
+#include <QPainter>
 
 // ============================================================================
 // InputSummaryWidget Implementation
@@ -38,6 +39,9 @@ void InputSummaryWidget::setup_ui()
 {
     setFixedWidth(EXPANDED_WIDTH);
 
+    this->setAttribute(Qt::WA_TranslucentBackground, true);
+    this->setAutoFillBackground(false);
+
     setup_minimized_button();
     setup_expanded_view();
 
@@ -63,12 +67,14 @@ void InputSummaryWidget::setup_minimized_button()
 void InputSummaryWidget::setup_expanded_view()
 {
     expandedContainer_ = new QWidget(this);
+    expandedContainer_->setStyleSheet("background-color: transparent;");
     QVBoxLayout* containerLayout = new QVBoxLayout(expandedContainer_);
     containerLayout->setContentsMargins(0, 0, 0, 0);
     containerLayout->setSpacing(0);
 
     // Header with title and minimize button
     QWidget* header = new QWidget();
+    header->setStyleSheet("background-color: transparent;");
     QHBoxLayout* headerLayout = new QHBoxLayout(header);
     headerLayout->setContentsMargins(10, 10, 10, 10);
     headerLayout->setSpacing(5);
@@ -107,6 +113,7 @@ void InputSummaryWidget::setup_expanded_view()
     scrollArea_->setFrameShape(QFrame::NoFrame);
 
     scrollContent_ = new QWidget();
+    scrollContent_->setStyleSheet("background-color: transparent;");
     mainContentLayout_ = new QVBoxLayout(scrollContent_);
     mainContentLayout_->setContentsMargins(10, 10, 10, 10);
     mainContentLayout_->setSpacing(15);
@@ -118,7 +125,7 @@ void InputSummaryWidget::setup_expanded_view()
     emptyStateLabel_->setAlignment(Qt::AlignCenter);
     emptyStateLabel_->setStyleSheet(
         "QLabel { "
-        "  color: #999999; "
+        "  color: #ffffff; "
         "  font-size: 13px; "
         "  font-style: italic; "
         "  padding: 40px 20px; "
@@ -151,8 +158,8 @@ void InputSummaryWidget::apply_styling()
 {
     setStyleSheet(
         "InputSummaryWidget { "
-        "  background-color: rgba(60, 60, 60, 230); "
         "  border-right: 1px solid #5a5a5a; "
+        "  border-radius: 5px; "
         "}"
         );
 
@@ -229,6 +236,7 @@ void InputSummaryWidget::update_hydraulic_data(const HydraulicData& data)
 void InputSummaryWidget::update_project_section(const ProjectData& data)
 {
     QWidget* content = new QWidget();
+    content->setStyleSheet("background-color: transparent;");
     QVBoxLayout* layout = new QVBoxLayout(content);
     layout->setContentsMargins(10, 5, 10, 5);
     layout->setSpacing(8);
@@ -240,13 +248,13 @@ void InputSummaryWidget::update_project_section(const ProjectData& data)
             fieldLayout->setSpacing(5);
 
             QLabel* labelWidget = new QLabel(label + ":");
-            labelWidget->setStyleSheet("color: #b0b0b0; font-size: 12px;");
+            labelWidget->setStyleSheet("background-color: transparent; color: #ffffff; font-size: 12px;");
             fieldLayout->addWidget(labelWidget);
 
             fieldLayout->addStretch();
 
             QLabel* valueWidget = new QLabel(value);
-            valueWidget->setStyleSheet("color: #ffffff; font-size: 12px; font-weight: 500;");
+            valueWidget->setStyleSheet("background-color: transparent; color: #ffffff; font-size: 12px; font-weight: 500;");
             valueWidget->setAlignment(Qt::AlignRight);
             fieldLayout->addWidget(valueWidget);
 
@@ -282,7 +290,7 @@ void InputSummaryWidget::update_geometry_section(const GeometryData& data)
             fieldLayout->setSpacing(5);
 
             QLabel* labelWidget = new QLabel(label + ":");
-            labelWidget->setStyleSheet("color: #b0b0b0; font-size: 12px;");
+            labelWidget->setStyleSheet("color: #ffffff; font-size: 12px;");
             fieldLayout->addWidget(labelWidget);
 
             fieldLayout->addStretch();
@@ -307,11 +315,11 @@ void InputSummaryWidget::update_geometry_section(const GeometryData& data)
     if(data.channelType == "Trapezoidal" || data.channelType == "Triangular")
     {
         if(data.sideSlope > 0.0)
-            add_field("Side Slope (H:V)", QString::number(data.sideSlope, 'f', 2));
+            add_field("Side Slope (H:V)", QString::number(data.sideSlope, 'g'));
     }
 
     if(data.bedSlope > 0.0)
-        add_field("Bed Slope", QString::number(data.bedSlope, 'f', 4));
+        add_field("Bed Slope", QString::number(data.bedSlope, 'g'));
 
     geometrySection_->set_content_widget(content);
 }
@@ -335,7 +343,7 @@ void InputSummaryWidget::update_hydraulic_section(const HydraulicData& data)
             fieldLayout->setSpacing(5);
 
             QLabel* labelWidget = new QLabel(label + ":");
-            labelWidget->setStyleSheet("color: #b0b0b0; font-size: 12px;");
+            labelWidget->setStyleSheet("color: #ffffff; font-size: 12px;");
             fieldLayout->addWidget(labelWidget);
 
             fieldLayout->addStretch();
@@ -353,14 +361,27 @@ void InputSummaryWidget::update_hydraulic_section(const HydraulicData& data)
         add_field("Discharge", format_with_units(data.discharge, dischargeUnit));
 
     if(data.manningN > 0.0)
-        add_field("Manning's n", QString::number(data.manningN, 'f', 3));
+        add_field("Manning's n", QString::number(data.manningN, 'g'));
 
     hydraulicSection_->set_content_widget(content);
 }
 
 QString InputSummaryWidget::format_with_units(double value, const QString& unit) const
 {
-    return QString::number(value, 'f', 3) + " " + unit;
+    QString numStr = QString::number(value, 'f', 6);  // More precision
+
+    // Remove trailing zeros
+    while(numStr.contains('.') && (numStr.endsWith('0') || numStr.endsWith('.')))
+    {
+        numStr.chop(1);
+        if(numStr.endsWith('.'))
+        {
+            numStr.chop(1);
+            break;
+        }
+    }
+
+    return numStr + " " + unit;
 }
 
 bool InputSummaryWidget::has_any_data() const
@@ -461,6 +482,29 @@ void InputSummaryWidget::check_auto_minimize(int windowWidth)
     }
 }
 
+void InputSummaryWidget::paintEvent(QPaintEvent* event)
+{
+    // Only paint background when expanded
+    if(!isMinimized_)
+    {
+        QPainter painter(this);
+
+        // Create horizontal gradient from left to right
+        QLinearGradient gradient(0, 0, width(), 0);
+
+        // Left side: semi-transparent dark grey (60% opacity)
+        QColor leftColor(60, 60, 60, 153);
+        gradient.setColorAt(0.0, leftColor);
+
+        // Right side: same grey but fully transparent
+        QColor rightColor(60, 60, 60, 0);
+        gradient.setColorAt(1.0, rightColor);
+
+        // Paint the gradient
+        painter.fillRect(rect(), gradient);
+    }
+}
+
 void InputSummaryWidget::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
@@ -525,6 +569,10 @@ CollapsibleSection::~CollapsibleSection()
 void CollapsibleSection::setup_ui()
 {
     mainLayout_ = new QVBoxLayout(this);
+
+    this->setAttribute(Qt::WA_TranslucentBackground, true);
+    this->setAutoFillBackground(false);
+
     mainLayout_->setContentsMargins(0, 0, 0, 0);
     mainLayout_->setSpacing(0);
 
@@ -556,7 +604,7 @@ void CollapsibleSection::apply_styling()
 
     toggleButton_->setStyleSheet(
         "QPushButton { "
-        "  background-color: #4a4a4a; "
+        "  background-color: rgba(74, 74, 74, 153); "
         "  color: #ffffff; "
         "  font-size: 12px; "
         "  font-weight: bold; "
@@ -564,10 +612,10 @@ void CollapsibleSection::apply_styling()
         "  padding-left: 8px; "
         "  border: none; "
         "  border-bottom: 1px solid #5a5a5a; "
-        "  border-radius: 0px; "
+        "  border-radius: 3px; "
         "}"
         "QPushButton:hover { "
-        "  background-color: #5a5a5a; "
+        "  background-color: rgba(90, 90, 90, 153); "
         "}"
         );
 }

@@ -35,6 +35,7 @@ signals:
     void minimized_state_changed(bool minimized);
 
 protected:
+    void paintEvent(QPaintEvent* event) override;
     void resizeEvent(QResizeEvent* event) override;
 
 private:
