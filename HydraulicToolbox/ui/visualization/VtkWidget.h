@@ -39,6 +39,9 @@ private:
     void setup_lighting();
     void set_camera_view(double posX, double posY, double posZ,
                          double upX, double upY, double upZ);
+    void render_rectangular_channel(const GeometryData& geometry, const CalculationResults& results);
+    void render_trapezoidal_channel(const GeometryData& geometry, const CalculationResults& results);
+    void render_triangular_channel(const GeometryData& geometry, const CalculationResults& results);
 
     vtkSmartPointer<vtkRenderer> renderer_;
     vtkSmartPointer<vtkGenericOpenGLRenderWindow> renderWindow_;

@@ -6,7 +6,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QResizeEvent>
-#include "VtkWidget.h"
+#include "../visualization/VtkWidget.h"
 #include "InputSummaryWidget.h"
 #include "ProjectDataStructures.h"
 #include "WorkflowController.h"

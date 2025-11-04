@@ -65,10 +65,8 @@ set(UI_MAIN_SOURCES
     ui/mainwindow.ui
 )
 
-# Controls subfolder (VtkWidget, WorkflowController, WorkflowTabBar)
+# Controls subfolder (WorkflowController, WorkflowTabBar)
 set(UI_CONTROLS_SOURCES
-    ui/controls/VtkWidget.h
-    ui/controls/VtkWidget.cpp
     ui/controls/WorkflowController.h
     ui/controls/WorkflowController.cpp
     ui/controls/WorkflowTabBar.h
@@ -99,12 +97,27 @@ set(UI_PANELS_SOURCES
     ui/panels/ParameterPanel.cpp
 )
 
+# Visualization subfolder (VtkWidget + renderers)
+set(UI_VISUALIZATION_SOURCES
+    ui/visualization/VtkWidget.h
+    ui/visualization/VtkWidget.cpp
+    ui/visualization/renderers/ChannelRenderer.h
+    ui/visualization/renderers/ChannelRenderer.cpp
+    ui/visualization/renderers/RectangularChannelRenderer.h
+    ui/visualization/renderers/RectangularChannelRenderer.cpp
+    ui/visualization/renderers/TrapezoidalChannelRenderer.h
+    ui/visualization/renderers/TrapezoidalChannelRenderer.cpp
+    ui/visualization/renderers/TriangularChannelRenderer.h
+    ui/visualization/renderers/TriangularChannelRenderer.cpp
+)
+
 # Combine all UI sources
 set(UI_SOURCES
     ${UI_MAIN_SOURCES}
     ${UI_CONTROLS_SOURCES}
     ${UI_WIDGETS_SOURCES}
     ${UI_PANELS_SOURCES}
+    ${UI_VISUALIZATION_SOURCES}
 )
 
 # ============================================================================
@@ -142,6 +155,8 @@ target_include_directories(HydraulicToolbox PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/ui/controls
     ${CMAKE_CURRENT_SOURCE_DIR}/ui/widgets
     ${CMAKE_CURRENT_SOURCE_DIR}/ui/panels
+    ${CMAKE_CURRENT_SOURCE_DIR}/ui/visualization
+    ${CMAKE_CURRENT_SOURCE_DIR}/ui/visualization/renderers
 )
 
 target_link_libraries(HydraulicToolbox PRIVATE
