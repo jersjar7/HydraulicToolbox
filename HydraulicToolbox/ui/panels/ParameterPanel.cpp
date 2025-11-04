@@ -90,7 +90,9 @@ void ParameterPanel::adjust_height_for_stage(WorkflowStage stage)
     }
 
     setMinimumHeight(preferredHeight);
-    setMaximumHeight(preferredHeight);
+    // setMaximumHeight(preferredHeight);
+
+    setMaximumHeight(500);
 }
 
 ProjectSetupWidget* ParameterPanel::get_project_setup_widget()

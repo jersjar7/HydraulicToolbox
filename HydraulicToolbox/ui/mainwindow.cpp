@@ -43,8 +43,6 @@ MainWindow::MainWindow(QWidget *parent)
             this, &MainWindow::on_unit_system_changed_with_data_clear);
 
     connect_input_summary_updates();
-
-    workflowController_->set_current_stage(WorkflowStage::ProjectSetup);
 }
 
 MainWindow::~MainWindow()
@@ -108,6 +106,8 @@ void MainWindow::setup_layout()
 
     visualizationPanel_ = new VisualizationPanel(workflowController_);
     parameterPanel_ = new ParameterPanel(workflowController_);
+
+    parameterPanel_->set_current_stage(WorkflowStage::ProjectSetup);
 
     mainSplitter_->addWidget(visualizationPanel_);
     mainSplitter_->addWidget(parameterPanel_);
