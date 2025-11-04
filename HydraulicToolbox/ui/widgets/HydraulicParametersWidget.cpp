@@ -138,6 +138,8 @@ void HydraulicParametersWidget::apply_styling()
         "  font-size: 13px; "
         "}"
         "QLineEdit:focus { border: 1px solid #0078d4; }"
+
+        // Combobox styling
         "QComboBox { "
         "  background-color: #4a4a4a; "
         "  color: #ffffff; "
@@ -147,22 +149,32 @@ void HydraulicParametersWidget::apply_styling()
         "  font-size: 13px; "
         "}"
         "QComboBox:focus { border: 1px solid #0078d4; }"
+
+        // Drop-down button - keep same background as combobox
         "QComboBox::drop-down { "
-        "  background-color: transparent; "
+        "  background-color: #4a4a4a; "
         "  border: none; "
         "  width: 20px; "
         "  subcontrol-origin: padding; "
         "  subcontrol-position: center right; "
         "}"
+
+        // Down arrow - create triangle using borders
         "QComboBox::down-arrow { "
         "  image: none; "
-        "  border-left: 4px solid transparent; "
-        "  border-right: 4px solid transparent; "
-        "  border-top: 6px solid #c0c0c0; "
+        "  border-style: solid; "
+        "  border-width: 6px 4px 0 4px; "
+        "  border-color: #c0c0c0 transparent transparent transparent; "
         "  width: 0; "
         "  height: 0; "
-        "  margin-right: 6px; "
         "}"
+
+        // Hover state - Brighter on hover
+        "QComboBox::down-arrow:hover { "
+        "  border-color: #ffffff transparent transparent transparent; "
+        "}"
+
+        // Item view styling - remove padding and margin
         "QComboBox QAbstractItemView { "
         "  background-color: #4a4a4a; "
         "  color: #ffffff; "
@@ -172,10 +184,13 @@ void HydraulicParametersWidget::apply_styling()
         "  margin: 0px; "
         "  outline: none; "
         "}"
+
+        // Item styling with proper padding
         "QComboBox QAbstractItemView::item { "
         "  padding: 6px; "
         "  min-height: 20px; "
         "}"
+
         "QGroupBox { "
         "  color: #c0c0c0; "
         "  font-size: 13px; "
