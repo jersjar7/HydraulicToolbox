@@ -134,6 +134,10 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
 qt_add_executable(HydraulicToolbox
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
+        ui/visualization/renderers/TrapezoidalChannelRenderer.h
+        ui/visualization/renderers/TrapezoidalChannelRenderer.cpp
+        ui/visualization/renderers/TriangularChannelRenderer.h
+        ui/visualization/renderers/TriangularChannelRenderer.cpp
     )
 else()
     if(ANDROID)

@@ -9,9 +9,11 @@
 #include <vtkOrientationMarkerWidget.h>
 #include <vtkAxesActor.h>
 #include <vtkAnnotatedCubeActor.h>
+#include <vtkRenderWindowInteractor.h>
+#include <memory>
 #include "ProjectDataStructures.h"
 #include "../backend/HydraulicCalculator.h"
-#include <vtkRenderWindowInteractor.h>
+#include "renderers/ChannelRenderer.h"
 
 class VtkWidget : public QVTKOpenGLNativeWidget
 {
@@ -39,9 +41,9 @@ private:
     void setup_lighting();
     void set_camera_view(double posX, double posY, double posZ,
                          double upX, double upY, double upZ);
-    void render_rectangular_channel(const GeometryData& geometry, const CalculationResults& results);
-    void render_trapezoidal_channel(const GeometryData& geometry, const CalculationResults& results);
-    void render_triangular_channel(const GeometryData& geometry, const CalculationResults& results);
+
+    std::unique_ptr<ChannelRenderer> create_renderer(const QString& channelType);
+    void setup_camera_for_geometry(const GeometryData& geometry, const CalculationResults& results);
 
     vtkSmartPointer<vtkRenderer> renderer_;
     vtkSmartPointer<vtkGenericOpenGLRenderWindow> renderWindow_;

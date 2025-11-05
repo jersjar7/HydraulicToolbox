@@ -1,4 +1,7 @@
 #include "VtkWidget.h"
+#include "renderers/RectangularChannelRenderer.h"
+#include "renderers/TrapezoidalChannelRenderer.h"
+#include "renderers/TriangularChannelRenderer.h"
 #include <vtkConeSource.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkActor.h>
@@ -162,105 +165,47 @@ void VtkWidget::hide_content()
 
 void VtkWidget::render_channel(const GeometryData& geometry, const CalculationResults& results)
 {
+    std::unique_ptr<ChannelRenderer> channelRenderer = create_renderer(geometry.channelType);
+
+    if(!channelRenderer)
+    {
+        return;
+    }
+
+    channelRenderer->render(renderer_, channelBottomActor_, channelWallsActor_,
+                            waterActor_, geometry, results);
+
+    setup_camera_for_geometry(geometry, results);
+
+    show_content();
+}
+
+std::unique_ptr<ChannelRenderer> VtkWidget::create_renderer(const QString& channelType)
+{
+    if(channelType == "Rectangular")
+    {
+        return std::make_unique<RectangularChannelRenderer>();
+    }
+    else if(channelType == "Trapezoidal")
+    {
+        return std::make_unique<TrapezoidalChannelRenderer>();
+    }
+    else if(channelType == "Triangular")
+    {
+        return std::make_unique<TriangularChannelRenderer>();
+    }
+
+    return nullptr;
+}
+
+
+void VtkWidget::setup_camera_for_geometry(const GeometryData& geometry, const CalculationResults& results)
+{
     double width = geometry.bottomWidth;
     double normalDepth = results.normalDepth;
     double channelDepth = normalDepth * 1.2;
     double length = width * 10.0;
 
-    // ===== CREATE CHANNEL BOTTOM =====
-    vtkSmartPointer<vtkPoints> bottomPoints = vtkSmartPointer<vtkPoints>::New();
-    bottomPoints->InsertNextPoint(0.0, 0.0, 0.0);
-    bottomPoints->InsertNextPoint(length, 0.0, 0.0);
-    bottomPoints->InsertNextPoint(length, 0.0, width);
-    bottomPoints->InsertNextPoint(0.0, 0.0, width);
-
-    vtkSmartPointer<vtkCellArray> bottomCells = vtkSmartPointer<vtkCellArray>::New();
-    vtkIdType bottom[4] = {0, 1, 2, 3};
-    bottomCells->InsertNextCell(4, bottom);
-
-    vtkSmartPointer<vtkPolyData> bottomPolyData = vtkSmartPointer<vtkPolyData>::New();
-    bottomPolyData->SetPoints(bottomPoints);
-    bottomPolyData->SetPolys(bottomCells);
-
-    vtkSmartPointer<vtkPolyDataMapper> bottomMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    bottomMapper->SetInputData(bottomPolyData);
-
-    channelBottomActor_->SetMapper(bottomMapper);
-    channelBottomActor_->GetProperty()->SetColor(0.35, 0.30, 0.25);
-    channelBottomActor_->GetProperty()->SetAmbient(0.3);
-    channelBottomActor_->GetProperty()->SetDiffuse(0.7);
-    channelBottomActor_->SetVisibility(1);
-
-    renderer_->AddActor(channelBottomActor_);
-
-    // ===== CREATE CHANNEL WALLS =====
-    vtkSmartPointer<vtkPoints> wallPoints = vtkSmartPointer<vtkPoints>::New();
-
-    wallPoints->InsertNextPoint(0.0, 0.0, 0.0);
-    wallPoints->InsertNextPoint(length, 0.0, 0.0);
-    wallPoints->InsertNextPoint(length, 0.0, width);
-    wallPoints->InsertNextPoint(0.0, 0.0, width);
-
-    wallPoints->InsertNextPoint(0.0, channelDepth, 0.0);
-    wallPoints->InsertNextPoint(length, channelDepth, 0.0);
-    wallPoints->InsertNextPoint(length, channelDepth, width);
-    wallPoints->InsertNextPoint(0.0, channelDepth, width);
-
-    vtkSmartPointer<vtkCellArray> wallCells = vtkSmartPointer<vtkCellArray>::New();
-
-    vtkIdType leftWall[4] = {0, 1, 5, 4};
-    wallCells->InsertNextCell(4, leftWall);
-
-    vtkIdType rightWall[4] = {3, 2, 6, 7};
-    wallCells->InsertNextCell(4, rightWall);
-
-    vtkSmartPointer<vtkPolyData> wallPolyData = vtkSmartPointer<vtkPolyData>::New();
-    wallPolyData->SetPoints(wallPoints);
-    wallPolyData->SetPolys(wallCells);
-
-    vtkSmartPointer<vtkPolyDataMapper> wallMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    wallMapper->SetInputData(wallPolyData);
-
-    channelWallsActor_->SetMapper(wallMapper);
-    channelWallsActor_->GetProperty()->SetColor(0.50, 0.50, 0.50);
-    channelWallsActor_->GetProperty()->SetAmbient(0.3);
-    channelWallsActor_->GetProperty()->SetDiffuse(0.7);
-    channelWallsActor_->SetVisibility(1);
-
-    renderer_->AddActor(channelWallsActor_);
-
-    // ===== CREATE WATER SURFACE =====
-    vtkSmartPointer<vtkPoints> waterPoints = vtkSmartPointer<vtkPoints>::New();
-
-    double waterLevel = normalDepth;
-    waterPoints->InsertNextPoint(0.0, waterLevel, 0.0);
-    waterPoints->InsertNextPoint(length, waterLevel, 0.0);
-    waterPoints->InsertNextPoint(length, waterLevel, width);
-    waterPoints->InsertNextPoint(0.0, waterLevel, width);
-
-    vtkSmartPointer<vtkCellArray> waterCells = vtkSmartPointer<vtkCellArray>::New();
-    vtkIdType waterFace[4] = {0, 1, 2, 3};
-    waterCells->InsertNextCell(4, waterFace);
-
-    vtkSmartPointer<vtkPolyData> waterPolyData = vtkSmartPointer<vtkPolyData>::New();
-    waterPolyData->SetPoints(waterPoints);
-    waterPolyData->SetPolys(waterCells);
-
-    vtkSmartPointer<vtkPolyDataMapper> waterMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    waterMapper->SetInputData(waterPolyData);
-
-    waterActor_->SetMapper(waterMapper);
-    waterActor_->GetProperty()->SetColor(0.1, 0.5, 0.9);
-    waterActor_->GetProperty()->SetOpacity(0.65);
-    waterActor_->GetProperty()->SetAmbient(0.2);
-    waterActor_->GetProperty()->SetDiffuse(0.6);
-    waterActor_->GetProperty()->SetSpecular(0.4);
-    waterActor_->GetProperty()->SetSpecularPower(20);
-    waterActor_->SetVisibility(1);
-
-    renderer_->AddActor(waterActor_);
-
-    // ===== SETUP CAMERA =====
     renderer_->ResetCamera();
 
     vtkCamera* camera = renderer_->GetActiveCamera();
@@ -292,7 +237,6 @@ void VtkWidget::render_channel(const GeometryData& geometry, const CalculationRe
 
     renderWindow_->Render();
 }
-
 void VtkWidget::set_camera_view(double posX, double posY, double posZ,
                                 double upX, double upY, double upZ)
 {
