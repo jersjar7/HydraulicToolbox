@@ -25,21 +25,31 @@ VtkWidget::VtkWidget(QWidget* parent)
     , channelBottomActor_{vtkSmartPointer<vtkActor>::New()}
     , channelWallsActor_{vtkSmartPointer<vtkActor>::New()}
     , waterActor_{vtkSmartPointer<vtkActor>::New()}
+    , particleActor_{vtkSmartPointer<vtkActor>::New()}
     , cubeActor_{vtkSmartPointer<vtkAnnotatedCubeActor>::New()}
     , orientationWidget_{vtkSmartPointer<vtkOrientationMarkerWidget>::New()}
     , focalPointX_{0.0}
     , focalPointY_{0.0}
     , focalPointZ_{0.0}
     , viewDistance_{10.0}
+    , animationTimer_{new QTimer(this)}
+    , waterFlowAnimator_{nullptr}
+    , currentChannelRenderer_{nullptr}
+    , currentGeometry_{}
+    , currentResults_{}
 {
     setMouseTracking(false);
     setAttribute(Qt::WA_AcceptTouchEvents, false);
     setEnableTouchEventProcessing(false);
     setup_vtk_pipeline();
+
+    animationTimer_->setInterval(33);
+    connect(animationTimer_, &QTimer::timeout, this, &VtkWidget::update_animation);
 }
 
 VtkWidget::~VtkWidget()
 {
+    stop_water_animation();
 }
 
 void VtkWidget::setup_vtk_pipeline()
@@ -61,6 +71,7 @@ void VtkWidget::setup_vtk_pipeline()
     channelBottomActor_->SetVisibility(0);
     channelWallsActor_->SetVisibility(0);
     waterActor_->SetVisibility(0);
+    particleActor_->SetVisibility(0);
 
     setup_lighting();
     setup_orientation_marker();
@@ -132,72 +143,68 @@ void VtkWidget::setup_lighting()
 void VtkWidget::show_content()
 {
     if (channelBottomActor_)
-    {
         channelBottomActor_->SetVisibility(1);
-    }
     if (channelWallsActor_)
-    {
         channelWallsActor_->SetVisibility(1);
-    }
     if (waterActor_)
-    {
         waterActor_->SetVisibility(1);
-    }
+
     renderWindow_->Render();
 }
 
 void VtkWidget::hide_content()
 {
     if (channelBottomActor_)
-    {
         channelBottomActor_->SetVisibility(0);
-    }
     if (channelWallsActor_)
-    {
         channelWallsActor_->SetVisibility(0);
-    }
     if (waterActor_)
-    {
         waterActor_->SetVisibility(0);
-    }
+    if (particleActor_)
+        particleActor_->SetVisibility(0);
+
     renderWindow_->Render();
 }
 
 void VtkWidget::render_channel(const GeometryData& geometry, const CalculationResults& results)
 {
-    std::unique_ptr<ChannelRenderer> channelRenderer = create_renderer(geometry.channelType);
+    stop_water_animation();
 
-    if(!channelRenderer)
-    {
+    currentGeometry_ = geometry;
+    currentResults_ = results;
+
+    currentChannelRenderer_ = create_renderer(geometry.channelType);
+
+    if(!currentChannelRenderer_)
         return;
-    }
 
-    channelRenderer->render(renderer_, channelBottomActor_, channelWallsActor_,
-                            waterActor_, geometry, results);
+    currentChannelRenderer_->render(renderer_, channelBottomActor_, channelWallsActor_,
+                                    waterActor_, geometry, results);
 
     setup_camera_for_geometry(geometry, results);
 
+    waterFlowAnimator_ = std::make_unique<WaterFlowAnimator>(
+        geometry, results, currentChannelRenderer_.get());
+
+    particleActor_ = waterFlowAnimator_->get_particle_actor();
+    renderer_->AddActor(particleActor_);
+    particleActor_->SetVisibility(1);
+
     show_content();
+    start_water_animation();
 }
 
 std::unique_ptr<ChannelRenderer> VtkWidget::create_renderer(const QString& channelType)
 {
     if(channelType == "Rectangular")
-    {
         return std::make_unique<RectangularChannelRenderer>();
-    }
     else if(channelType == "Trapezoidal")
-    {
         return std::make_unique<TrapezoidalChannelRenderer>();
-    }
     else if(channelType == "Triangular")
-    {
         return std::make_unique<TriangularChannelRenderer>();
-    }
 
     return nullptr;
 }
-
 
 void VtkWidget::setup_camera_for_geometry(const GeometryData& geometry, const CalculationResults& results)
 {
@@ -237,6 +244,7 @@ void VtkWidget::setup_camera_for_geometry(const GeometryData& geometry, const Ca
 
     renderWindow_->Render();
 }
+
 void VtkWidget::set_camera_view(double posX, double posY, double posZ,
                                 double upX, double upY, double upZ)
 {
@@ -285,4 +293,28 @@ void VtkWidget::reset_view()
     double dz = cos(elevationRad) * sin(azimuthRad);
 
     set_camera_view(dx, dy, dz, 0.0, 1.0, 0.0);
+}
+
+void VtkWidget::start_water_animation()
+{
+    if(waterFlowAnimator_ && !animationTimer_->isActive())
+        animationTimer_->start();
+}
+
+void VtkWidget::stop_water_animation()
+{
+    if(animationTimer_->isActive())
+        animationTimer_->stop();
+}
+
+void VtkWidget::update_animation()
+{
+    if(!waterFlowAnimator_)
+        return;
+
+    double deltaTime = 0.033;
+
+    waterFlowAnimator_->update(deltaTime);
+
+    renderWindow_->Render();
 }

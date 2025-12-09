@@ -112,3 +112,41 @@ void TriangularChannelRenderer::create_triangular_water_surface(vtkSmartPointer<
 
     renderer->AddActor(waterActor);
 }
+
+Point3D TriangularChannelRenderer::get_inlet_center(const GeometryData& geometry,
+                                                    const CalculationResults& results) const
+{
+    double normalDepth = results.normalDepth;
+
+    Point3D inlet;
+    inlet.x = 0.0;
+    inlet.y = normalDepth * 0.5;
+    inlet.z = 0.0;  // Center line where walls meet
+
+    return inlet;
+}
+
+Point3D TriangularChannelRenderer::get_outlet_center(const GeometryData& geometry,
+                                                     const CalculationResults& results) const
+{
+    double normalDepth = results.normalDepth;
+    double channelDepth = normalDepth * 1.2;
+    double length = channelDepth * 10.0;
+
+    Point3D outlet;
+    outlet.x = length;
+    outlet.y = normalDepth * 0.5;
+    outlet.z = 0.0;  // Center line where walls meet
+
+    return outlet;
+}
+
+Vector3D TriangularChannelRenderer::get_flow_direction() const
+{
+    Vector3D direction;
+    direction.x = 1.0;
+    direction.y = 0.0;
+    direction.z = 0.0;
+
+    return direction;
+}

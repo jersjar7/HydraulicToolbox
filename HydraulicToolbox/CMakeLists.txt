@@ -109,6 +109,10 @@ set(UI_VISUALIZATION_SOURCES
     ui/visualization/renderers/TrapezoidalChannelRenderer.cpp
     ui/visualization/renderers/TriangularChannelRenderer.h
     ui/visualization/renderers/TriangularChannelRenderer.cpp
+    ui/visualization/animation/ParticleSystem.h
+    ui/visualization/animation/ParticleSystem.cpp
+    ui/visualization/animation/WaterFlowAnimator.h
+    ui/visualization/animation/WaterFlowAnimator.cpp
 )
 
 # Combine all UI sources
@@ -134,10 +138,6 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
 qt_add_executable(HydraulicToolbox
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        ui/visualization/renderers/TrapezoidalChannelRenderer.h
-        ui/visualization/renderers/TrapezoidalChannelRenderer.cpp
-        ui/visualization/renderers/TriangularChannelRenderer.h
-        ui/visualization/renderers/TriangularChannelRenderer.cpp
     )
 else()
     if(ANDROID)
@@ -161,6 +161,8 @@ target_include_directories(HydraulicToolbox PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/ui/panels
     ${CMAKE_CURRENT_SOURCE_DIR}/ui/visualization
     ${CMAKE_CURRENT_SOURCE_DIR}/ui/visualization/renderers
+    ${CMAKE_CURRENT_SOURCE_DIR}/ui/visualization/animation
+
 )
 
 target_link_libraries(HydraulicToolbox PRIVATE
@@ -196,6 +198,7 @@ add_executable(HydraulicTests
     tests/Flow_UnitTests.cpp
     tests/Analyzer_UnitTests.cpp
     ${BACKEND_SOURCES}
+
 )
 
 target_include_directories(HydraulicTests PRIVATE

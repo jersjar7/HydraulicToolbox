@@ -2,6 +2,7 @@
 #define VTKWIDGET_H
 
 #include <QVTKOpenGLNativeWidget.h>
+#include <QTimer>
 #include <vtkSmartPointer.h>
 #include <vtkRenderer.h>
 #include <vtkGenericOpenGLRenderWindow.h>
@@ -14,6 +15,7 @@
 #include "ProjectDataStructures.h"
 #include "../backend/HydraulicCalculator.h"
 #include "renderers/ChannelRenderer.h"
+#include "animation/WaterFlowAnimator.h"
 
 class VtkWidget : public QVTKOpenGLNativeWidget
 {
@@ -34,6 +36,12 @@ public slots:
     void set_view_isometric();
     void reset_view();
 
+    void start_water_animation();
+    void stop_water_animation();
+
+private slots:
+    void update_animation();
+
 private:
     void setup_vtk_pipeline();
     void setup_camera();
@@ -51,6 +59,7 @@ private:
     vtkSmartPointer<vtkActor> channelBottomActor_;
     vtkSmartPointer<vtkActor> channelWallsActor_;
     vtkSmartPointer<vtkActor> waterActor_;
+    vtkSmartPointer<vtkActor> particleActor_;
     vtkSmartPointer<vtkAnnotatedCubeActor> cubeActor_;
     vtkSmartPointer<vtkOrientationMarkerWidget> orientationWidget_;
 
@@ -58,6 +67,12 @@ private:
     double focalPointY_;
     double focalPointZ_;
     double viewDistance_;
+
+    QTimer* animationTimer_;
+    std::unique_ptr<WaterFlowAnimator> waterFlowAnimator_;
+    std::unique_ptr<ChannelRenderer> currentChannelRenderer_;
+    GeometryData currentGeometry_;
+    CalculationResults currentResults_;
 };
 
 #endif // VTKWIDGET_H

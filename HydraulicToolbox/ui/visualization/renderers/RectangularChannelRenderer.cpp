@@ -69,3 +69,42 @@ void RectangularChannelRenderer::create_rectangular_walls(vtkSmartPointer<vtkAct
 
     renderer->AddActor(wallsActor);
 }
+
+Point3D RectangularChannelRenderer::get_inlet_center(const GeometryData& geometry,
+                                                     const CalculationResults& results) const
+{
+    double width = geometry.bottomWidth;
+    double normalDepth = results.normalDepth;
+
+    Point3D inlet;
+    inlet.x = 0.0;
+    inlet.y = normalDepth * 0.5;
+    inlet.z = width * 0.5;
+
+    return inlet;
+}
+
+Point3D RectangularChannelRenderer::get_outlet_center(const GeometryData& geometry,
+                                                      const CalculationResults& results) const
+{
+    double width = geometry.bottomWidth;
+    double normalDepth = results.normalDepth;
+    double length = width * 10.0;
+
+    Point3D outlet;
+    outlet.x = length;
+    outlet.y = normalDepth * 0.5;
+    outlet.z = width * 0.5;
+
+    return outlet;
+}
+
+Vector3D RectangularChannelRenderer::get_flow_direction() const
+{
+    Vector3D direction;
+    direction.x = 1.0;
+    direction.y = 0.0;
+    direction.z = 0.0;
+
+    return direction;
+}

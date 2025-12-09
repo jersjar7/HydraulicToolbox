@@ -16,6 +16,12 @@ public:
                 const GeometryData& geometry,
                 const CalculationResults& results) override;
 
+    Point3D get_inlet_center(const GeometryData& geometry,
+                             const CalculationResults& results) const override;
+    Point3D get_outlet_center(const GeometryData& geometry,
+                              const CalculationResults& results) const override;
+    Vector3D get_flow_direction() const override;
+
 private:
     void create_rectangular_walls(vtkSmartPointer<vtkActor>& wallsActor,
                                   double length,

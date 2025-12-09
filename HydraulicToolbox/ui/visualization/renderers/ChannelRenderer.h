@@ -7,6 +7,20 @@
 #include "ProjectDataStructures.h"
 #include "../backend/HydraulicCalculator.h"
 
+struct Point3D
+{
+    double x{0.0};
+    double y{0.0};
+    double z{0.0};
+};
+
+struct Vector3D
+{
+    double x{0.0};
+    double y{0.0};
+    double z{0.0};
+};
+
 class ChannelRenderer
 {
 public:
@@ -18,6 +32,13 @@ public:
                         vtkSmartPointer<vtkActor>& waterActor,
                         const GeometryData& geometry,
                         const CalculationResults& results) = 0;
+
+    // Spatial interface for particle animation
+    virtual Point3D get_inlet_center(const GeometryData& geometry,
+                                     const CalculationResults& results) const = 0;
+    virtual Point3D get_outlet_center(const GeometryData& geometry,
+                                      const CalculationResults& results) const = 0;
+    virtual Vector3D get_flow_direction() const = 0;
 
 protected:
     void create_channel_bottom(vtkSmartPointer<vtkActor>& bottomActor,
