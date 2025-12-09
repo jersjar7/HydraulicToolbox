@@ -83,10 +83,6 @@ private:
     static constexpr int AUTO_MINIMIZE_THRESHOLD = 800;
 };
 
-// ============================================================================
-// CollapsibleSection - Helper widget for expandable/collapsible sections
-// ============================================================================
-
 class CollapsibleSection : public QWidget
 {
     Q_OBJECT

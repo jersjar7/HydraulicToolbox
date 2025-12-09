@@ -33,7 +33,6 @@ public:
                         const GeometryData& geometry,
                         const CalculationResults& results) = 0;
 
-    // Spatial interface for particle animation
     virtual Point3D get_inlet_center(const GeometryData& geometry,
                                      const CalculationResults& results) const = 0;
     virtual Point3D get_outlet_center(const GeometryData& geometry,

@@ -150,7 +150,7 @@ void HydraulicParametersWidget::apply_styling()
         "}"
         "QComboBox:focus { border: 1px solid #0078d4; }"
 
-        // Drop-down button - keep same background as combobox
+        // Drop-down button
         "QComboBox::drop-down { "
         "  background-color: #4a4a4a; "
         "  border: none; "
@@ -159,7 +159,7 @@ void HydraulicParametersWidget::apply_styling()
         "  subcontrol-position: center right; "
         "}"
 
-        // Down arrow - create triangle using borders
+        // Down arrow
         "QComboBox::down-arrow { "
         "  image: none; "
         "  border-style: solid; "
@@ -169,12 +169,12 @@ void HydraulicParametersWidget::apply_styling()
         "  height: 0; "
         "}"
 
-        // Hover state - Brighter on hover
+        // Hover state
         "QComboBox::down-arrow:hover { "
         "  border-color: #ffffff transparent transparent transparent; "
         "}"
 
-        // Item view styling - remove padding and margin
+        // Item view styling
         "QComboBox QAbstractItemView { "
         "  background-color: #4a4a4a; "
         "  color: #ffffff; "

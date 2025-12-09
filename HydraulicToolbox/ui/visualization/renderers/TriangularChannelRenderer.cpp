@@ -16,11 +16,7 @@ void TriangularChannelRenderer::render(vtkSmartPointer<vtkRenderer> renderer,
     double normalDepth = results.normalDepth;
     double channelDepth = normalDepth * 1.2;
 
-    // For triangular channel, use depth to determine visualization scale
     double length = channelDepth * 10.0;
-
-    // Triangular channels don't have a flat bottom, so we skip the bottom actor
-    // or create a very thin line to represent the bottom edge
 
     create_triangular_walls(wallsActor, length, sideSlope, channelDepth, renderer);
 
@@ -121,7 +117,7 @@ Point3D TriangularChannelRenderer::get_inlet_center(const GeometryData& geometry
     Point3D inlet;
     inlet.x = 0.0;
     inlet.y = normalDepth * 0.5;
-    inlet.z = 0.0;  // Center line where walls meet
+    inlet.z = 0.0;
 
     return inlet;
 }
@@ -136,7 +132,7 @@ Point3D TriangularChannelRenderer::get_outlet_center(const GeometryData& geometr
     Point3D outlet;
     outlet.x = length;
     outlet.y = normalDepth * 0.5;
-    outlet.z = 0.0;  // Center line where walls meet
+    outlet.z = 0.0;
 
     return outlet;
 }

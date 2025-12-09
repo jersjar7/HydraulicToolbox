@@ -62,7 +62,6 @@ void ProjectSetupWidget::on_unit_system_changed()
         return;
     }
 
-    // Check if there's data in downstream stages
     if(has_downstream_data())
     {
         QMessageBox msgBox(this);
@@ -77,13 +76,11 @@ void ProjectSetupWidget::on_unit_system_changed()
 
         if(response == QMessageBox::Yes)
         {
-            // User confirmed - emit signal to clear data
             emit unit_system_changed_with_data_clear();
             emit data_changed();
         }
         else
         {
-            // User cancelled - revert unit system selection
             suppressUnitChangeWarning_ = true;
             bool shouldBeUsCustomary = !is_us_customary();
             if(shouldBeUsCustomary)
@@ -95,7 +92,6 @@ void ProjectSetupWidget::on_unit_system_changed()
     }
     else
     {
-        // No downstream data, just emit change
         emit data_changed();
     }
 }

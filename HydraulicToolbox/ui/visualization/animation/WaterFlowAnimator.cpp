@@ -42,16 +42,14 @@ void WaterFlowAnimator::spawn_particles(double deltaTime)
     static std::random_device rd;
     static std::mt19937 gen(rd());
 
-    // Spawn across full water depth and width
     std::uniform_real_distribution<> depthDist(0.1 * normalDepth_, 0.9 * normalDepth_);
-    std::uniform_real_distribution<> widthDist(-0.4, 0.4);  // Relative to center
+    std::uniform_real_distribution<> widthDist(-0.4, 0.4);
 
     for(int i = 0; i < particlesToSpawn; ++i)
     {
         double x = inletCenter_.x;
-        double y = depthDist(gen);  // Full depth range
+        double y = depthDist(gen);
 
-        // Calculate actual width at inlet (depends on channel type)
         double z = inletCenter_.z + widthDist(gen) * (inletCenter_.z > 0.1 ? inletCenter_.z : normalDepth_);
 
         double vx = flowVelocity_ * flowDirection_.x;
@@ -71,8 +69,8 @@ void WaterFlowAnimator::apply_gravity_at_outlet()
 {
     // Access particles and apply gravity when they reach outlet
     // This is a simplified approach - particles already have velocity
-    // In a more sophisticated version, we'd modify ParticleSystem to expose particles
-    // For now, particles will flow straight through - gravity effect can be enhanced later
+    // TODO: modify ParticleSystem to expose particles
+    // For now, particles flow straight through - gravity effect will be enhanced later
 }
 
 bool WaterFlowAnimator::is_particle_at_outlet(const Particle& particle) const

@@ -146,7 +146,6 @@ void VisualizationPanel::resizeEvent(QResizeEvent* event)
     position_view_controls();
     position_input_summary();
 
-    // Check for auto-minimize
     if(inputSummaryWidget_)
     {
         inputSummaryWidget_->check_auto_minimize(width());

@@ -6,10 +6,6 @@
 #include <QTimer>
 #include <QPainter>
 
-// ============================================================================
-// InputSummaryWidget Implementation
-// ============================================================================
-
 InputSummaryWidget::InputSummaryWidget(WorkflowController* controller, QWidget* parent)
     : QWidget(parent)
     , controller_{controller}
@@ -370,7 +366,6 @@ QString InputSummaryWidget::format_with_units(double value, const QString& unit)
 {
     QString numStr = QString::number(value, 'f', 6);  // More precision
 
-    // Remove trailing zeros
     while(numStr.contains('.') && (numStr.endsWith('0') || numStr.endsWith('.')))
     {
         numStr.chop(1);
@@ -484,7 +479,6 @@ void InputSummaryWidget::check_auto_minimize(int windowWidth)
 
 void InputSummaryWidget::paintEvent(QPaintEvent* event)
 {
-    // Only paint background when expanded
     if(!isMinimized_)
     {
         QPainter painter(this);
@@ -544,10 +538,6 @@ void InputSummaryWidget::load_state()
     geometrySection_->set_expanded(settings.value("geometryExpanded", true).toBool());
     hydraulicSection_->set_expanded(settings.value("hydraulicExpanded", true).toBool());
 }
-
-// ============================================================================
-// CollapsibleSection Implementation
-// ============================================================================
 
 CollapsibleSection::CollapsibleSection(const QString& title, QWidget* parent)
     : QWidget(parent)

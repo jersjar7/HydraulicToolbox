@@ -168,7 +168,6 @@ void MainWindow::update_input_summary()
     if(!summaryWidget)
         return;
 
-    // Update all sections with current data
     summaryWidget->update_project_data(workflowController_->get_project_data());
     summaryWidget->update_geometry_data(workflowController_->get_geometry_data());
     summaryWidget->update_hydraulic_data(workflowController_->get_hydraulic_data());
@@ -189,7 +188,6 @@ void MainWindow::on_current_stage_changed(WorkflowStage newStage)
         workflowController_->mark_stage_complete(WorkflowStage::AnalysisResults, true);
     }
 
-    // Update summary when stage changes
     update_input_summary();
 }
 
